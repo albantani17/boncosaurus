@@ -17,9 +17,9 @@ export const transactionRoutes = new Elysia({ prefix: '/transactions' })
   )
   .post(
     '/',
-    async ({ workspaceId, body, set }) => {
+    async ({ workspaceId, userId, body, set }) => {
       set.status = 201;
-      return transactionService.createTransaction(workspaceId, body);
+      return transactionService.createTransaction(workspaceId, { ...body, createdBy: userId });
     },
     { body: createTransactionBody }
   )

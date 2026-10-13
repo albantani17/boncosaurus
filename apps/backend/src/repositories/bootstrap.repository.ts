@@ -1,4 +1,4 @@
-import { count } from 'drizzle-orm';
+import { and, count, eq, isNull } from 'drizzle-orm';
 import { db } from '../db';
 import { categories, users, workspaceMembers, workspaces } from '../db/schema';
 import type { BootstrapRepository } from '../types/bootstrap.types';
@@ -14,7 +14,11 @@ export const bootstrapRepository: BootstrapRepository = {
     await db.transaction(async (tx) => {
       const [admin] = await tx
         .insert(users)
-        .values({ email: config.adminEmail, name: config.adminName })
+        .values({
+          email: config.adminEmail,
+          name: config.adminName,
+          passwordHash: config.adminPasswordHash
+        })
         .returning({ id: users.id });
       const [workspace] = await tx
         .insert(workspaces)
@@ -26,5 +30,17 @@ export const bootstrapRepository: BootstrapRepository = {
         .values({ workspaceId: workspace!.id, userId: admin!.id, role: 'owner' });
       await tx.insert(categories).values(buildCategoryRows(workspace!.id, defaults));
     });
+  },
+
+  async adminNeedsPassword(email) {
+    const [row] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.email, email), isNull(users.passwordHash)));
+    return row !== undefined;
+  },
+
+  async setAdminPassword(email, passwordHash) {
+    await db.update(users).set({ passwordHash }).where(eq(users.email, email));
   }
 };

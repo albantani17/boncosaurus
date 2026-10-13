@@ -19,7 +19,9 @@ export type CreateTransactionInput = Pick<
   NewTransaction,
   'type' | 'accountId' | 'amount' | 'occurredAt'
 > &
-  Partial<Pick<NewTransaction, 'toAccountId' | 'categoryId' | 'toAmount' | 'note' | 'source'>>;
+  Partial<
+    Pick<NewTransaction, 'toAccountId' | 'categoryId' | 'toAmount' | 'note' | 'source' | 'createdBy'>
+  >;
 
 type Dependencies = {
   transactions: TransactionRepository;
