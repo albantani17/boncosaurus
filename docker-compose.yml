@@ -24,6 +24,14 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env (min 32 chars)}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-}
+      WORKSPACE_NAME: ${WORKSPACE_NAME:-}
+      BASE_CURRENCY: ${BASE_CURRENCY:-}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      COOKIE_SECURE: ${COOKIE_SECURE:-}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     depends_on:
