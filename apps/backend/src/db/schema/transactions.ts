@@ -1,0 +1,63 @@
+import { sql } from 'drizzle-orm';
+import { check, foreignKey, index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { accounts } from './accounts';
+import { categories } from './categories';
+import { money, timestamps, uuidV7Pk } from './columns';
+import { transactionSource, transactionType } from './enums';
+import { users } from './users';
+import { workspaces } from './workspaces';
+
+export const transactions = pgTable(
+  'transactions',
+  {
+    id: uuidV7Pk(),
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
+    type: transactionType('type').notNull(),
+    accountId: uuid('account_id').notNull(),
+    toAccountId: uuid('to_account_id'),
+    categoryId: uuid('category_id'),
+    amount: money('amount').notNull(),
+    toAmount: money('to_amount'),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+    note: text('note'),
+    source: transactionSource('source').notNull().default('manual'),
+    createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    ...timestamps()
+  },
+  (table) => [
+    foreignKey({
+      name: 'transactions_account_fk',
+      columns: [table.workspaceId, table.accountId],
+      foreignColumns: [accounts.workspaceId, accounts.id]
+    }),
+    foreignKey({
+      name: 'transactions_to_account_fk',
+      columns: [table.workspaceId, table.toAccountId],
+      foreignColumns: [accounts.workspaceId, accounts.id]
+    }),
+    foreignKey({
+      name: 'transactions_category_fk',
+      columns: [table.workspaceId, table.categoryId],
+      foreignColumns: [categories.workspaceId, categories.id]
+    }),
+    check('transactions_amount_positive', sql`${table.amount} > 0`),
+    check(
+      'transactions_to_amount_positive',
+      sql`${table.toAmount} IS NULL OR ${table.toAmount} > 0`
+    ),
+    check(
+      'transactions_transfer_shape',
+      sql`${table.type} <> 'transfer' OR (${table.toAccountId} IS NOT NULL AND ${table.categoryId} IS NULL AND ${table.toAccountId} <> ${table.accountId})`
+    ),
+    check(
+      'transactions_non_transfer_shape',
+      sql`${table.type} = 'transfer' OR (${table.toAccountId} IS NULL AND ${table.toAmount} IS NULL)`
+    ),
+    index('transactions_workspace_occurred_idx').on(table.workspaceId, table.occurredAt.desc()),
+    index('transactions_account_idx').on(table.accountId),
+    index('transactions_category_idx').on(table.categoryId)
+  ]
+);
