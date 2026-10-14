@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Boncosaurus is a self-hostable personal finance app: a Bun workspace monorepo with `apps/backend` (Elysia + Drizzle ORM on PostgreSQL) and `apps/frontend` (SvelteKit 3, Svelte 5 runes, Tailwind CSS v4, `adapter-node`). The frontend currently has a login page and a dashboard; the other nav entries are disabled placeholders.
+Boncosaurus is a self-hostable personal finance app: a Bun workspace monorepo with `apps/backend` (Elysia + Drizzle ORM on PostgreSQL) and `apps/frontend` (SvelteKit 3, Svelte 5 runes, Tailwind CSS v4, `adapter-node`). The frontend has dashboard, transactions, accounts, categories, profile, and an AI assistant chat.
 
 ## Commands
 
@@ -62,6 +62,13 @@ Every request goes through these layers: `routes/` → `services/` → `reposito
 
 `GET /reports/summary?from&to` returns income/expense totals per currency plus per-category totals for the range. Transfers are excluded and currencies are never mixed (currency comes from the transaction's account).
 
+### AI chat
+
+- Built on the Vercel AI SDK v7 (`ai`, `@ai-sdk/*`). v7 names differ from older docs: `instructions` (not `system`), `isStepCount`, `toUIMessageStream` + `createUIMessageStreamResponse` with `onEnd`, `createGoogle`.
+- **Providers** (`ai_providers`, per workspace, managed by owner/admin) are Anthropic, OpenAI, Google, or `openai_compatible` with a `baseUrl` (Ollama, LM Studio, OpenRouter, …). One row is one model profile; one row per workspace is `isDefault`. API keys are AES-GCM encrypted with `AI_SECRET_KEY` (`utils/secret-box.ts`) and never returned; responses carry `hasApiKey`/`apiKeyHint`. Without `AI_SECRET_KEY` every AI endpoint returns `AI_NOT_CONFIGURED` (503). `utils/create-language-model.ts` maps a provider row to a model.
+- **Chat** (`/chat/conversations`, private per user): the client sends only the new message; `chat.service.ts` keeps only its text, loads history from `chat_messages` (UIMessage `parts` as jsonb), saves the user message before streaming and the assistant message in `onEnd`. All message ids are server-generated UUIDv7. `result.consumeStream()` keeps saving if the browser disconnects.
+- **Tools** (`services/chat-tools.ts`) read through the existing services. `proposeTransaction` only validates (`transactionService.previewTransaction`) and returns a draft; `POST …/drafts/confirm` creates the transaction with `source: 'ai'` and rewrites the stored tool output to `saved` (idempotent, serialized per draft). Tool dates must be ISO with an offset; the system prompt gives the current time in the browser's time zone.
+
 ### Startup bootstrap
 
 `index.ts` runs `bootstrapFirstRun` before it starts listening. If the DB has no users and `ADMIN_EMAIL`/`ADMIN_PASSWORD` are set, it creates the admin, a workspace (`WORKSPACE_NAME`, `BASE_CURRENCY`), and the default categories from `data/default-categories.ts`. It also sets a password for an existing admin that has none (the upgrade path from before auth existed).
@@ -74,6 +81,7 @@ Every request goes through these layers: `routes/` → `services/` → `reposito
 - **Routes:** `login/` and `logout/` are public; everything under `(app)/` (`dashboard`, `transaksi`, `akun`, `kategori`, `profil`) requires a session (`(app)/+layout.server.ts` redirects to `/login` and loads `/auth/me`). The first workspace of the user is used; there is no workspace switcher yet.
 - **CRUD pattern:** list pages open a `Dialog.svelte` (native `<dialog>`, bottom sheet below `md`) containing a form component (`AccountForm`, `CategoryForm`, `TransactionForm`) that posts to named actions (`?/create`, `?/update`, `?/archive`, `?/delete`). The dialog only renders its children while open, so form components read their props once (`untrack`) as initial state. Forms submit through `lib/forms/enhance-with-feedback.ts`; actions parse `FormData` with pure `utils/parse-*-form.ts` helpers and call the backend through `lib/server/services/run-backend-action.ts`. That helper maps `ApiError` codes to Indonesian messages (`utils/describe-api-error.ts`, with per-action overrides) and sends a 401 to `/login`. Action calls omit `X-Workspace-Id`, so the backend falls back to the same first workspace the layout uses.
 - **Transactions page:** filters live in the URL (`month`, `type`, `accountId`, `categoryId`, read by `utils/transaction-filters.ts`). Pages are 50 rows, fetched with `limit=51` to detect more; "Muat lebih banyak" calls `transaksi/data/+server.ts` and keeps extra pages in `$state.raw` tied to the identity of `data.rows`, so any reload drops them in the same render. `?baru=1` opens the add dialog (used by the mobile "+" button). Datetimes are sent with the browser's `tzOffset` (`utils/local-datetime.ts`).
+- **Assistant (`/asisten`):** `/asisten/[id]` uses `Chat` from `@ai-sdk/svelte`, created once per conversation id. `[id]/stream/+server.ts` proxies the backend's UI message stream unchanged (errors become plain text, which the transport shows). Draft cards post to `?/confirmDraft`/`?/dismissDraft` and patch `chat.messages` locally. Assistant text is rendered with `utils/parse-chat-markdown.ts` (paragraphs, lists, bold; never `{@html}`). Provider settings live at `/asisten/pengaturan`. On mobile the assistant is reached from the header, so the bottom bar keeps four items (`MOBILE_NAV_ITEMS`).
 - **Dashboard data** is assembled by `lib/server/services/dashboard.service.ts` from `/accounts`, `/categories`, `/transactions` and `/reports/summary`. Month boundaries are computed in the frontend server's timezone (`TZ`). Totals are per currency and only the workspace `baseCurrency` feeds the cards; other currencies are listed separately and never converted.
 - **Design tokens** come from `DESIGN.md` and live in the `@theme` block of `src/app.css` (e.g. `bg-forest-900`, `text-dino-400`). The product name stays "Boncosaurus" even though `DESIGN.md` says DinoBudget. Mascot art is pixel data in `lib/data/dino-sprites.ts`, rendered as SVG by `DinoSprite.svelte`.
 - Amounts are integers in major units (no cents), formatted by `utils/format-currency.ts` (`Rp2.450.000`).

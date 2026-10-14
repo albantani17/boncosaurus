@@ -32,6 +32,10 @@ services:
       BASE_CURRENCY: ${BASE_CURRENCY:-}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
       COOKIE_SECURE: ${COOKIE_SECURE:-}
+      AI_SECRET_KEY: ${AI_SECRET_KEY:-}
+    extra_hosts:
+      # Lets an OpenAI-compatible base URL like http://host.docker.internal:11434/v1 reach Ollama on the host
+      - "host.docker.internal:host-gateway"
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     depends_on:
