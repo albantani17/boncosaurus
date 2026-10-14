@@ -1,36 +1,18 @@
 import type { Account, Category, PeriodSummary, Transaction } from '../../types/api.types';
-import type { DashboardData, RecentTransaction } from '../../types/dashboard.types';
+import type { DashboardData } from '../../types/dashboard.types';
 import { buildCategoryBreakdown } from '../../utils/build-category-breakdown';
 import { formatMonthLabel } from '../../utils/format-month-label';
 import { formatTransactionDate } from '../../utils/format-transaction-date';
 import { getMonthRange } from '../../utils/get-month-range';
 import { pickMascotState } from '../../utils/pick-mascot-state';
 import { sumBalancesByCurrency } from '../../utils/sum-balances-by-currency';
+import { toTransactionRow } from './to-transaction-row';
 
 const RECENT_TRANSACTION_LIMIT = 8;
 
 type Client = { get<T>(path: string): Promise<T> };
 
 type Input = { client: Client; baseCurrency: string; now: Date };
-
-function toRecentTransaction(
-	transaction: Transaction,
-	accountsById: Map<string, Account>,
-	categoriesById: Map<string, Category>,
-	now: Date
-): RecentTransaction {
-	const account = accountsById.get(transaction.accountId);
-	return {
-		id: transaction.id,
-		type: transaction.type,
-		amount: transaction.amount,
-		currency: account?.currency ?? 'IDR',
-		accountName: account?.name ?? '-',
-		categoryName: transaction.categoryId ? (categoriesById.get(transaction.categoryId)?.name ?? null) : null,
-		note: transaction.note,
-		dateLabel: formatTransactionDate(new Date(transaction.occurredAt), now)
-	};
-}
 
 export async function loadDashboard({ client, baseCurrency, now }: Input): Promise<DashboardData> {
 	const { from, to } = getMonthRange(now);
@@ -60,9 +42,10 @@ export async function loadDashboard({ client, baseCurrency, now }: Input): Promi
 		otherCurrencyTotals: summary.totals.filter((totals) => totals.currency !== baseCurrency),
 		breakdown: buildCategoryBreakdown(summary.byCategory, categories, baseCurrency),
 		accounts: accounts.filter((account) => !account.isArchived),
-		recentTransactions: transactions.map((transaction) =>
-			toRecentTransaction(transaction, accountsById, categoriesById, now)
-		),
+		recentTransactions: transactions.map((transaction) => ({
+			...toTransactionRow(transaction, accountsById, categoriesById),
+			dateLabel: formatTransactionDate(new Date(transaction.occurredAt), now)
+		})),
 		mascot: pickMascotState(monthTotals)
 	};
 }

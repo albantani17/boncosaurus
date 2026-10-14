@@ -9,10 +9,11 @@ const account: Account = {
 	name: 'BCA',
 	type: 'bank',
 	currency: 'IDR',
+	initialBalance: 0,
 	isArchived: false,
 	balance: 1_000_000
 };
-const category: Category = { id: 'cat-1', name: 'Makanan', type: 'expense', isArchived: false };
+const category: Category = { id: 'cat-1', name: 'Makanan', type: 'expense', parentId: null, isArchived: false };
 const transaction: Transaction = {
 	id: 'tx-1',
 	type: 'expense',
@@ -20,6 +21,7 @@ const transaction: Transaction = {
 	toAccountId: null,
 	categoryId: 'cat-1',
 	amount: 25_000,
+	toAmount: null,
 	occurredAt: new Date(2026, 9, 13, 8).toISOString(),
 	note: 'sarapan'
 };

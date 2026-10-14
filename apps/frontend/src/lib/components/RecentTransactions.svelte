@@ -2,6 +2,7 @@
 	import { TRANSACTION_TYPE_DISPLAY } from '#lib/data/transaction-type-display.ts';
 	import type { RecentTransaction } from '#lib/types/dashboard.types.ts';
 	import { formatCurrency } from '#lib/utils/format-currency.ts';
+	import TransactionRow from './TransactionRow.svelte';
 
 	type Props = { transactions: RecentTransaction[] };
 
@@ -52,20 +53,8 @@
 
 <ul class="flex flex-col divide-y divide-forest-600 md:hidden">
 	{#each transactions as transaction (transaction.id)}
-		{@const display = TRANSACTION_TYPE_DISPLAY[transaction.type]}
-		<li class="flex min-h-16 items-center gap-3 py-3 first:pt-0 last:pb-0">
-			<span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-forest-950 {display.textClass}">
-				<display.icon class="size-4" aria-hidden="true" />
-			</span>
-			<div class="min-w-0 flex-1">
-				<p class="truncate text-sm text-beige-100">{describe(transaction)}</p>
-				<p class="truncate text-xs text-sage-400">
-					<span class="sr-only">{display.label}, </span>{transaction.accountName} · {transaction.dateLabel}
-				</p>
-			</div>
-			<p class="shrink-0 text-sm font-medium tabular-nums {display.textClass}">
-				{amountText(transaction)}
-			</p>
+		<li>
+			<TransactionRow row={transaction} meta="{transaction.accountName} · {transaction.dateLabel}" />
 		</li>
 	{/each}
 </ul>
