@@ -1,4 +1,4 @@
-import type { Handle } from '@sveltejs/kit/hooks';
+import type { Handle, HandleServerError } from '@sveltejs/kit/hooks';
 import {
 	ACCESS_COOKIE,
 	REFRESH_COOKIE,
@@ -23,4 +23,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	return resolve(event);
+};
+
+// Unexpected errors: keep the details in the server log and show a generic message to the user.
+export const handleError: HandleServerError = ({ error, event }) => {
+	console.error(`${event.request.method} ${event.url.pathname}`, error);
+	return { message: 'Terjadi kesalahan di server.' };
 };
