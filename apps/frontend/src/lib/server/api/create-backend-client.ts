@@ -7,7 +7,7 @@ type Options = {
 	workspaceId?: string;
 };
 
-type RequestOptions = { method?: string; body?: unknown; headers?: Record<string, string> };
+type RequestOptions = { method?: string; body?: unknown; headers?: Record<string, string>; signal?: AbortSignal };
 
 async function toApiError(response: Response): Promise<ApiError> {
 	const payload = await response.json().catch(() => null);
@@ -17,7 +17,7 @@ async function toApiError(response: Response): Promise<ApiError> {
 }
 
 export function createBackendClient({ fetch, baseUrl, accessToken, workspaceId }: Options) {
-	async function request(path: string, { method = 'GET', body, headers = {} }: RequestOptions = {}) {
+	async function request(path: string, { method = 'GET', body, headers = {}, signal }: RequestOptions = {}) {
 		const response = await fetch(`${baseUrl}${path}`, {
 			method,
 			headers: {
@@ -26,7 +26,8 @@ export function createBackendClient({ fetch, baseUrl, accessToken, workspaceId }
 				...(workspaceId ? { 'x-workspace-id': workspaceId } : {}),
 				...headers
 			},
-			body: body === undefined ? undefined : JSON.stringify(body)
+			body: body === undefined ? undefined : JSON.stringify(body),
+			signal
 		});
 		if (!response.ok) throw await toApiError(response);
 		return response;

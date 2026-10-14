@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Plus from '@lucide/svelte/icons/plus';
-	import { NAV_ITEMS, NEW_TRANSACTION_HREF } from '#lib/data/nav-items.ts';
+	import { MOBILE_NAV_ITEMS, NEW_TRANSACTION_HREF } from '#lib/data/nav-items.ts';
 	import { isNavItemActive } from '#lib/utils/is-nav-item-active.ts';
 
-	const leftItems = NAV_ITEMS.slice(0, 2);
-	const rightItems = NAV_ITEMS.slice(2);
+	const leftItems = MOBILE_NAV_ITEMS.slice(0, 2);
+	const rightItems = MOBILE_NAV_ITEMS.slice(2);
 </script>
 
-{#snippet navItem(item: (typeof NAV_ITEMS)[number])}
+{#snippet navItem(item: (typeof MOBILE_NAV_ITEMS)[number])}
 	{@const active = isNavItemActive(page.url.pathname, item.href)}
 	<a
 		href={item.href}
