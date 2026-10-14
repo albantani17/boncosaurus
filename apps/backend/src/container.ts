@@ -1,6 +1,7 @@
 import { accountRepository } from './repositories/account.repository';
 import { categoryRepository } from './repositories/category.repository';
 import { refreshTokenRepository } from './repositories/refresh-token.repository';
+import { reportRepository } from './repositories/report.repository';
 import { transactionRepository } from './repositories/transaction.repository';
 import { userRepository } from './repositories/user.repository';
 import { workspaceRepository } from './repositories/workspace.repository';
@@ -8,6 +9,7 @@ import { createAccessTokenService } from './services/access-token.service';
 import { createAccountService } from './services/account.service';
 import { createAuthService } from './services/auth.service';
 import { createCategoryService } from './services/category.service';
+import { createReportService } from './services/report.service';
 import { createTransactionService } from './services/transaction.service';
 import { createWorkspaceService } from './services/workspace.service';
 import { parseAuthConfig } from './utils/parse-auth-config';
@@ -38,6 +40,7 @@ export const authService = createAuthService({
 export const workspaceService = createWorkspaceService(workspaceRepository);
 export const accountService = createAccountService(accountRepository);
 export const categoryService = createCategoryService(categoryRepository);
+export const reportService = createReportService(reportRepository);
 export const transactionService = createTransactionService({
   transactions: transactionRepository,
   accounts: accountRepository,
