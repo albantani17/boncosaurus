@@ -6,6 +6,7 @@ const makeCategory = (id: string, name: string): Category => ({
 	id,
 	name,
 	type: 'expense',
+	parentId: null,
 	isArchived: false
 });
 const makeRow = (categoryId: string | null, total: number, overrides: Partial<CategoryTotal> = {}): CategoryTotal => ({

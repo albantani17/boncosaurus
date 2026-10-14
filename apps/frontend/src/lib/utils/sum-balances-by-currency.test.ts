@@ -7,6 +7,7 @@ const makeAccount = (overrides: Partial<Account>): Account => ({
 	name: 'Kas',
 	type: 'cash',
 	currency: 'IDR',
+	initialBalance: 0,
 	isArchived: false,
 	balance: 0,
 	...overrides

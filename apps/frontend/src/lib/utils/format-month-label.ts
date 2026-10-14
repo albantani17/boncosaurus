@@ -1,16 +1,3 @@
-const MONTHS = [
-	'Januari',
-	'Februari',
-	'Maret',
-	'April',
-	'Mei',
-	'Juni',
-	'Juli',
-	'Agustus',
-	'September',
-	'Oktober',
-	'November',
-	'Desember'
-];
+import { MONTH_NAMES } from '../data/indonesian-calendar';
 
-export const formatMonthLabel = (date: Date) => `${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+export const formatMonthLabel = (date: Date) => `${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`;

@@ -16,11 +16,20 @@ export type Account = {
 	name: string;
 	type: 'cash' | 'bank' | 'ewallet' | 'credit_card' | 'investment' | 'other';
 	currency: string;
+	initialBalance: number;
 	isArchived: boolean;
 	balance: number;
 };
 
-export type Category = { id: string; name: string; type: 'income' | 'expense'; isArchived: boolean };
+export type CategoryType = 'income' | 'expense';
+
+export type Category = {
+	id: string;
+	name: string;
+	type: CategoryType;
+	parentId: string | null;
+	isArchived: boolean;
+};
 
 export type Transaction = {
 	id: string;
@@ -29,6 +38,7 @@ export type Transaction = {
 	toAccountId: string | null;
 	categoryId: string | null;
 	amount: number;
+	toAmount: number | null;
 	occurredAt: string;
 	note: string | null;
 };

@@ -1,12 +1,9 @@
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-
-const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+import { SHORT_MONTH_NAMES } from '../data/indonesian-calendar';
+import { daysBetween } from './days-between';
 
 export function formatTransactionDate(value: Date, now: Date): string {
-	const dayDifference = Math.round(
-		(startOfDay(now).getTime() - startOfDay(value).getTime()) / (24 * 60 * 60 * 1000)
-	);
+	const dayDifference = daysBetween(value, now);
 	if (dayDifference === 0) return 'Hari ini';
 	if (dayDifference === 1) return 'Kemarin';
-	return `${value.getDate()} ${MONTHS[value.getMonth()]}`;
+	return `${value.getDate()} ${SHORT_MONTH_NAMES[value.getMonth()]}`;
 }
