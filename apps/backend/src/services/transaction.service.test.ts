@@ -88,6 +88,22 @@ const expenseInput = {
   occurredAt: now
 };
 
+describe('previewTransaction', () => {
+  test('validates a draft without inserting it', async () => {
+    const { service, inserted } = setup();
+
+    await service.previewTransaction('ws', expenseInput);
+
+    expect(inserted).toEqual([]);
+  });
+
+  test('rejects a draft that references a missing account', async () => {
+    const { service } = setup({ accounts: [] });
+
+    await expect(service.previewTransaction('ws', expenseInput)).rejects.toMatchObject({ status: 404 });
+  });
+});
+
 describe('createTransaction', () => {
   test('creates an expense in the given workspace', async () => {
     const { service, inserted } = setup();

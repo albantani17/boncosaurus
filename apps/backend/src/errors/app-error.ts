@@ -37,3 +37,15 @@ export class ForbiddenError extends AppError {
     super(403, code, message);
   }
 }
+
+export class BadGatewayError extends AppError {
+  constructor(code: string, message: string) {
+    super(502, code, message);
+  }
+}
+
+export class ServiceUnavailableError extends AppError {
+  constructor(code: string, message: string) {
+    super(503, code, message);
+  }
+}

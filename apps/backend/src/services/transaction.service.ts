@@ -50,6 +50,18 @@ export function createTransactionService({ transactions, accounts, categories }:
     return { account, toAccount, category };
   }
 
+  async function assertValidInput(workspaceId: string, input: CreateTransactionInput): Promise<void> {
+    const draft: TransactionDraft = {
+      type: input.type,
+      accountId: input.accountId,
+      amount: input.amount,
+      toAccountId: input.toAccountId ?? null,
+      categoryId: input.categoryId ?? null,
+      toAmount: input.toAmount ?? null
+    };
+    validateTransaction(draft, await resolveReferences(workspaceId, draft));
+  }
+
   async function requireTransaction(workspaceId: string, id: string) {
     const transaction = await transactions.findById(workspaceId, id);
     if (!transaction) throw new NotFoundError('Transaction');
@@ -62,19 +74,14 @@ export function createTransactionService({ transactions, accounts, categories }:
 
     getTransaction: (workspaceId: string, id: string) => requireTransaction(workspaceId, id),
 
+    previewTransaction: (workspaceId: string, input: CreateTransactionInput) =>
+      assertValidInput(workspaceId, input),
+
     async createTransaction(
       workspaceId: string,
       input: CreateTransactionInput
     ): Promise<Transaction> {
-      const draft: TransactionDraft = {
-        type: input.type,
-        accountId: input.accountId,
-        amount: input.amount,
-        toAccountId: input.toAccountId ?? null,
-        categoryId: input.categoryId ?? null,
-        toAmount: input.toAmount ?? null
-      };
-      validateTransaction(draft, await resolveReferences(workspaceId, draft));
+      await assertValidInput(workspaceId, input);
       return transactions.insert({ ...input, workspaceId });
     },
 

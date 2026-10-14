@@ -1,0 +1,173 @@
+import { describe, expect, test } from 'bun:test';
+import { BadRequestError } from '../errors/app-error';
+import type { Category, Transaction, TransactionFilters } from '../types/finance.types';
+import type { AccountWithBalance } from './account.service';
+import { type ChatToolDependencies, createChatTools } from './chat-tools';
+import type { CreateTransactionInput } from './transaction.service';
+
+const now = new Date('2026-10-14T08:00:00Z');
+const options = { toolCallId: 'call-1', messages: [], context: {} };
+
+const account: AccountWithBalance = {
+  id: 'acc-1',
+  workspaceId: 'ws',
+  name: 'Cash',
+  type: 'cash',
+  currency: 'IDR',
+  initialBalance: 0,
+  isArchived: false,
+  sortOrder: 0,
+  createdAt: now,
+  updatedAt: now,
+  balance: 50_000
+};
+
+const category: Category = {
+  id: 'cat-1',
+  workspaceId: 'ws',
+  parentId: null,
+  name: 'Makanan',
+  type: 'expense',
+  icon: null,
+  color: null,
+  isArchived: false,
+  createdAt: now,
+  updatedAt: now
+};
+
+const transaction: Transaction = {
+  id: 'tx-1',
+  workspaceId: 'ws',
+  type: 'expense',
+  accountId: 'acc-1',
+  toAccountId: null,
+  categoryId: 'cat-1',
+  amount: 25_000,
+  toAmount: null,
+  occurredAt: now,
+  note: 'Kopi',
+  source: 'manual',
+  createdBy: null,
+  deletedAt: null,
+  createdAt: now,
+  updatedAt: now
+};
+
+function setup(preview: (input: CreateTransactionInput) => Promise<void> = async () => {}) {
+  const calls = { summary: [] as unknown[], list: [] as TransactionFilters[], preview: [] as CreateTransactionInput[] };
+  const deps: ChatToolDependencies = {
+    reports: {
+      getSummary: async (_ws, range) => {
+        calls.summary.push(range);
+        return {
+          ...range,
+          totals: [{ currency: 'IDR', income: 0, expense: 25_000, net: -25_000 }],
+          byCategory: [{ categoryId: 'cat-1', type: 'expense', currency: 'IDR', total: 25_000 }]
+        };
+      }
+    },
+    accounts: { listAccounts: async () => [account] },
+    categories: { listCategories: async () => [category] },
+    transactions: {
+      listTransactions: async (_ws, filters) => {
+        calls.list.push(filters);
+        return [transaction];
+      },
+      previewTransaction: async (_ws, input) => {
+        calls.preview.push(input);
+        await preview(input);
+      }
+    }
+  };
+  return { tools: createChatTools(deps, 'ws'), calls };
+}
+
+describe('getSummary', () => {
+  test('adds category names to the totals', async () => {
+    const { tools } = setup();
+
+    const result = await tools.getSummary.execute!(
+      { from: '2026-10-01T00:00:00+07:00', to: '2026-10-31T23:59:59+07:00' },
+      options
+    );
+
+    expect(result).toMatchObject({ byCategory: [{ categoryId: 'cat-1', categoryName: 'Makanan' }] });
+  });
+
+  test('returns an error for a date without an offset', async () => {
+    const { tools, calls } = setup();
+
+    const result = await tools.getSummary.execute!({ from: '2026-10-01', to: '2026-10-31T00:00:00Z' }, options);
+
+    expect(result).toHaveProperty('error');
+    expect(calls.summary).toEqual([]);
+  });
+});
+
+describe('searchTransactions', () => {
+  test('resolves account and category names and defaults the limit', async () => {
+    const { tools, calls } = setup();
+
+    const result = await tools.searchTransactions.execute!({ type: 'expense' }, options);
+
+    expect(result).toEqual([
+      expect.objectContaining({ id: 'tx-1', account: 'Cash', category: 'Makanan', note: 'Kopi' })
+    ]);
+    expect(calls.list[0]).toMatchObject({ type: 'expense', limit: 20, offset: 0 });
+  });
+});
+
+describe('proposeTransaction', () => {
+  const input = {
+    type: 'expense' as const,
+    accountId: 'acc-1',
+    categoryId: 'cat-1',
+    amount: 25_000,
+    occurredAt: '2026-10-14T09:00:00+07:00',
+    note: ' Kopi '
+  };
+
+  test('returns a pending draft without saving anything', async () => {
+    const { tools, calls } = setup();
+
+    const result = await tools.proposeTransaction.execute!(input, options);
+
+    expect(result).toEqual({
+      status: 'pending',
+      draft: {
+        type: 'expense',
+        accountId: 'acc-1',
+        toAccountId: null,
+        categoryId: 'cat-1',
+        amount: 25_000,
+        toAmount: null,
+        occurredAt: '2026-10-14T02:00:00.000Z',
+        note: 'Kopi'
+      }
+    });
+    expect(calls.preview).toHaveLength(1);
+  });
+
+  test('reports validation errors so the model can fix them', async () => {
+    const { tools } = setup(async () => {
+      throw new BadRequestError('CATEGORY_TYPE_MISMATCH', 'Category type does not match the transaction type');
+    });
+
+    const result = await tools.proposeTransaction.execute!(input, options);
+
+    expect(result).toEqual({
+      status: 'invalid',
+      code: 'CATEGORY_TYPE_MISMATCH',
+      message: 'Category type does not match the transaction type'
+    });
+  });
+
+  test('rejects a date without an offset before validating', async () => {
+    const { tools, calls } = setup();
+
+    const result = await tools.proposeTransaction.execute!({ ...input, occurredAt: '2026-10-14 09:00' }, options);
+
+    expect(result).toMatchObject({ status: 'invalid', code: 'INVALID_DATE' });
+    expect(calls.preview).toEqual([]);
+  });
+});

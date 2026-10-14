@@ -7,6 +7,7 @@ export type WorkspaceRepository = {
   isMember(userId: string, workspaceId: string): Promise<boolean>;
   findFirstWorkspaceIdForUser(userId: string): Promise<string | undefined>;
   listForUser(userId: string): Promise<WorkspaceMembership[]>;
+  findRole(userId: string, workspaceId: string): Promise<WorkspaceMembership['role'] | undefined>;
 };
 
 const membershipsOf = (userId: string) =>
@@ -36,5 +37,13 @@ export const workspaceRepository: WorkspaceRepository = {
     return row?.id;
   },
 
-  listForUser: (userId) => membershipsOf(userId)
+  listForUser: (userId) => membershipsOf(userId),
+
+  async findRole(userId, workspaceId) {
+    const [row] = await db
+      .select({ role: workspaceMembers.role })
+      .from(workspaceMembers)
+      .where(and(eq(workspaceMembers.userId, userId), eq(workspaceMembers.workspaceId, workspaceId)));
+    return row?.role;
+  }
 };
