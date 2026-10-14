@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Boncosaurus is a self-hostable personal finance app: a Bun workspace monorepo with `apps/backend` (Elysia + Drizzle ORM on PostgreSQL) and `apps/frontend` (SvelteKit 2/Svelte 5 runes, `adapter-node`). The frontend is still a stub that only pings `/health`; nearly all logic lives in the backend.
+Boncosaurus is a self-hostable personal finance app: a Bun workspace monorepo with `apps/backend` (Elysia + Drizzle ORM on PostgreSQL) and `apps/frontend` (SvelteKit 3, Svelte 5 runes, Tailwind CSS v4, `adapter-node`). The frontend currently has a login page and a dashboard; the other nav entries are disabled placeholders.
 
 ## Commands
 
@@ -28,10 +28,13 @@ cd apps/backend && bun test                                  # all tests
 cd apps/backend && bun test src/services/auth.service.test.ts
 cd apps/backend && bun test -t "rejects a category"          # by test name
 cd apps/backend && bunx tsc --noEmit                         # typecheck backend
+cd apps/frontend && bun test                                 # frontend unit tests (pure utils/services)
 cd apps/frontend && bun run check                            # svelte-check
 ```
 
 There is no linter or formatter configured. Backend code uses 2-space indentation and single quotes; the frontend uses tabs.
+
+`bun run dev` loads the root `.env`. Frontend env vars (`API_URL`, `COOKIE_SECURE`) are declared in `apps/frontend/src/env.ts` and imported from `$app/env/private`; the SvelteKit 2 `$env/*` modules and `$lib` no longer exist.
 
 ## Backend architecture
 
@@ -54,9 +57,23 @@ Every request goes through these layers: `routes/` → `services/` → `reposito
 - Refresh tokens are stored hashed and grouped by `familyId`. Each refresh rotates the token. Reusing a revoked token, or losing the rotation race, revokes the whole family (`auth.service.ts`).
 - The plugins are scoped `resolve` hooks. `authPlugin` adds `userId`. `workspacePlugin` adds `userId` and `workspaceId`: it takes the optional `X-Workspace-Id` header and checks membership, and without the header it falls back to the user's first workspace. Workspace-scoped routes `.use(workspacePlugin)`.
 
+### Reports
+
+`GET /reports/summary?from&to` returns income/expense totals per currency plus per-category totals for the range. Transfers are excluded and currencies are never mixed (currency comes from the transaction's account).
+
 ### Startup bootstrap
 
 `index.ts` runs `bootstrapFirstRun` before it starts listening. If the DB has no users and `ADMIN_EMAIL`/`ADMIN_PASSWORD` are set, it creates the admin, a workspace (`WORKSPACE_NAME`, `BASE_CURRENCY`), and the default categories from `data/default-categories.ts`. It also sets a password for an existing admin that has none (the upgrade path from before auth existed).
+
+## Frontend architecture (`apps/frontend`)
+
+- **Import alias is `#lib/*`** (package.json `imports`), not `$lib`, and it needs the file extension: `#lib/utils/format-currency.ts`. Code that must run under `bun test` imports siblings with relative paths instead, because Bun can't resolve SvelteKit virtual modules (`$app/*`).
+- **The browser never talks to the backend.** Login is a SvelteKit form action; the server stores the session in its own httpOnly cookies (`bs_access`, `bs_refresh`) and every API call is made server-side through `lib/server/api/backend.ts` (`backendFor(fetch, { accessToken, workspaceId })`). The backend's refresh token is read from its `Set-Cookie` header (`utils/read-set-cookie.ts`) and sent back as a `Cookie` header.
+- **`hooks.server.ts`** fills `locals.accessToken`, refreshing through `services/refresh-coordinator.ts` when only `bs_refresh` is left. The coordinator shares one in-flight refresh per token (and caches the result for 30 s) because the backend revokes the whole token family if a refresh token is used twice.
+- **Routes:** `login/` and `logout/` are public; everything under `(app)/` requires a session (`(app)/+layout.server.ts` redirects to `/login` and loads `/auth/me`). The first workspace of the user is used; there is no workspace switcher yet.
+- **Dashboard data** is assembled by `lib/server/services/dashboard.service.ts` from `/accounts`, `/categories`, `/transactions` and `/reports/summary`. Month boundaries are computed in the frontend server's timezone (`TZ`). Totals are per currency and only the workspace `baseCurrency` feeds the cards; other currencies are listed separately and never converted.
+- **Design tokens** come from `DESIGN.md` and live in the `@theme` block of `src/app.css` (e.g. `bg-forest-900`, `text-dino-400`). The product name stays "Boncosaurus" even though `DESIGN.md` says DinoBudget. Mascot art is pixel data in `lib/data/dino-sprites.ts`, rendered as SVG by `DinoSprite.svelte`.
+- Amounts are integers in major units (no cents), formatted by `utils/format-currency.ts` (`Rp2.450.000`).
 
 ## Database conventions (`src/db/schema/`)
 
