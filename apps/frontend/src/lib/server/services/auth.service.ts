@@ -39,6 +39,19 @@ export function createAuthService(client: Pick<BackendClient, 'request'>) {
 			return readSession(response);
 		},
 
+		async updateProfile(input: { name: string; email: string; currentPassword?: string }): Promise<PublicUser> {
+			const response = await client.request('/auth/me', { method: 'PATCH', body: input });
+			return (await response.json()) as PublicUser;
+		},
+
+		async changePassword(currentPassword: string, newPassword: string): Promise<Session> {
+			const response = await client.request('/auth/me/password', {
+				method: 'POST',
+				body: { currentPassword, newPassword }
+			});
+			return readSession(response);
+		},
+
 		async logout(refreshToken: string): Promise<void> {
 			await client
 				.request('/auth/logout', { method: 'POST', headers: asRefreshCookie(refreshToken) })
