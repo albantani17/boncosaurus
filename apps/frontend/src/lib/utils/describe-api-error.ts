@@ -22,6 +22,14 @@ const MESSAGES: Record<string, string> = {
 	FORBIDDEN_ROLE: 'Hanya pemilik atau admin workspace yang bisa mengubah pengaturan AI.',
 	DRAFT_NOT_PENDING: 'Draf transaksi ini sudah diproses.',
 	EMPTY_MESSAGE: 'Pesan tidak boleh kosong.',
+	IMPORT_UNSUPPORTED_FILE: 'Format file tidak didukung. Pakai CSV, TSV, XLSX, PDF, JSON, atau TXT.',
+	IMPORT_NO_TEXT: 'PDF ini tidak berisi teks (mungkin hasil scan). Pakai PDF yang teksnya bisa dipilih.',
+	IMPORT_TOO_LARGE: 'File terlalu besar. Maksimal 5 MB.',
+	IMPORT_TOO_MANY_ROWS: 'Terlalu banyak transaksi dalam satu file. Maksimal 2.000.',
+	IMPORT_UNREADABLE: 'File tidak bisa dibaca. Pastikan isinya tidak rusak atau kosong.',
+	IMPORT_EMPTY: 'Tidak ada transaksi yang ditemukan untuk diimpor.',
+	IMPORT_INVALID_ROW: 'Ada transaksi yang tidak valid. Periksa pemetaan akun dan kategori lalu coba lagi.',
+	AI_REQUEST_FAILED: 'AI gagal membaca file. Periksa provider di Pengaturan AI lalu coba lagi.',
 	VALIDATION_ERROR: 'Data yang dikirim tidak valid. Periksa lagi isian formulir.'
 };
 

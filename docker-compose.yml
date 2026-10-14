@@ -51,6 +51,8 @@ services:
       API_URL: http://backend:3000
       COOKIE_SECURE: ${COOKIE_SECURE:-}
       TZ: ${TZ:-Asia/Jakarta}
+      # Unggah file impor (maks 5 MB); default adapter-node hanya 512 KB
+      BODY_SIZE_LIMIT: 10M
     ports:
       - "${FRONTEND_PORT:-5173}:3000"
     depends_on:

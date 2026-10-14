@@ -21,12 +21,12 @@ export function createBackendClient({ fetch, baseUrl, accessToken, workspaceId }
 		const response = await fetch(`${baseUrl}${path}`, {
 			method,
 			headers: {
-				...(body === undefined ? {} : { 'content-type': 'application/json' }),
+				...(body === undefined || body instanceof FormData ? {} : { 'content-type': 'application/json' }),
 				...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
 				...(workspaceId ? { 'x-workspace-id': workspaceId } : {}),
 				...headers
 			},
-			body: body === undefined ? undefined : JSON.stringify(body),
+			body: body === undefined || body instanceof FormData ? (body as FormData | undefined) : JSON.stringify(body),
 			signal
 		});
 		if (!response.ok) throw await toApiError(response);

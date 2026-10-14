@@ -24,3 +24,10 @@ describe('describeApiError', () => {
 		expect(describeApiError(undefined)).toContain('Terjadi kesalahan');
 	});
 });
+
+describe('describeApiError import codes', () => {
+	test('translates import errors', () => {
+		expect(describeApiError('IMPORT_TOO_LARGE')).toBe('File terlalu besar. Maksimal 5 MB.');
+		expect(describeApiError('IMPORT_UNSUPPORTED_FILE')).toContain('Format file tidak didukung');
+	});
+});

@@ -4,6 +4,7 @@
 	import { untrack } from 'svelte';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Scale from '@lucide/svelte/icons/scale';
+	import Upload from '@lucide/svelte/icons/upload';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import TrendingDown from '@lucide/svelte/icons/trending-down';
 	import TrendingUp from '@lucide/svelte/icons/trending-up';
@@ -113,14 +114,23 @@
 		<h1 class="text-2xl font-semibold tracking-tight lg:text-3xl">Transaksi</h1>
 		<p class="text-sm text-sage-300">{data.monthLabel}</p>
 	</div>
-	<button
-		type="button"
-		onclick={openCreate}
-		class="hidden h-11 shrink-0 items-center gap-2 rounded-control bg-dino-400 px-4 text-sm font-semibold text-forest-950 hover:brightness-110 md:inline-flex"
-	>
-		<Plus class="size-4" aria-hidden="true" />
-		Tambah transaksi
-	</button>
+	<div class="flex shrink-0 gap-2">
+		<a
+			href="/transaksi/impor"
+			class="inline-flex h-11 items-center gap-2 rounded-control border border-forest-600 px-4 text-sm font-medium hover:bg-forest-800"
+		>
+			<Upload class="size-4" aria-hidden="true" />
+			Impor
+		</a>
+		<button
+			type="button"
+			onclick={openCreate}
+			class="hidden h-11 items-center gap-2 rounded-control bg-dino-400 px-4 text-sm font-semibold text-forest-950 hover:brightness-110 md:inline-flex"
+		>
+			<Plus class="size-4" aria-hidden="true" />
+			Tambah transaksi
+		</button>
+	</div>
 </div>
 
 {#if notice}<FormMessage tone="success" message={notice} />{/if}
