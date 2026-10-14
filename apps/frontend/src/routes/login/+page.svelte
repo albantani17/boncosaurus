@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import CircleAlert from '@lucide/svelte/icons/circle-alert';
 	import BrandMark from '#lib/components/BrandMark.svelte';
 	import DinoSprite from '#lib/components/DinoSprite.svelte';
 	import ForestBanner from '#lib/components/ForestBanner.svelte';
+	import FormMessage from '#lib/components/FormMessage.svelte';
+	import PasswordField from '#lib/components/PasswordField.svelte';
 	import TextField from '#lib/components/TextField.svelte';
 	import type { PageProps } from './$types';
 
@@ -54,14 +55,7 @@
 				}}
 			>
 				{#if form?.message}
-					<p
-						id="login-error"
-						role="alert"
-						class="flex items-start gap-2 rounded-control border border-coral-400 bg-forest-950 px-3 py-2.5 text-sm text-coral-400"
-					>
-						<CircleAlert class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-						<span>{form.message}</span>
-					</p>
+					<FormMessage id="login-error" message={form.message} />
 				{/if}
 
 				<TextField
@@ -73,10 +67,9 @@
 					invalid={Boolean(form?.message)}
 					describedBy={form?.message ? 'login-error' : undefined}
 				/>
-				<TextField
+				<PasswordField
 					label="Kata sandi"
 					name="password"
-					type="password"
 					autocomplete="current-password"
 					invalid={Boolean(form?.message)}
 					describedBy={form?.message ? 'login-error' : undefined}

@@ -1,37 +1,61 @@
 <script lang="ts">
+	import { FIELD_HINT_CLASS, FIELD_LABEL_CLASS, fieldInputClass } from '#lib/data/field-styles.ts';
+
 	type Props = {
 		label: string;
 		name: string;
-		type?: 'text' | 'email' | 'password';
+		id?: string;
+		type?: 'text' | 'email' | 'month' | 'datetime-local';
 		value?: string;
-		autocomplete?: 'username' | 'email' | 'current-password';
+		autocomplete?: 'username' | 'email' | 'name' | 'off';
+		inputmode?: 'text' | 'numeric' | 'email';
+		placeholder?: string;
+		maxlength?: number;
+		required?: boolean;
 		invalid?: boolean;
 		describedBy?: string;
+		hint?: string;
 	};
 
 	let {
 		label,
 		name,
+		id = name,
 		type = 'text',
-		value = '',
+		value = $bindable(''),
 		autocomplete,
+		inputmode,
+		placeholder,
+		maxlength,
+		required = true,
 		invalid = false,
-		describedBy
+		describedBy,
+		hint
 	}: Props = $props();
+
+	const hintId = $derived(hint ? `${id}-hint` : undefined);
 </script>
 
 <div class="flex flex-col gap-1.5">
-	<label for={name} class="text-sm font-medium text-sage-300">{label}</label>
+	<label for={id} class={FIELD_LABEL_CLASS}>
+		{label}
+		{#if !required}<span class="font-normal text-sage-400">(opsional)</span>{/if}
+	</label>
 	<input
-		id={name}
+		{id}
 		{name}
 		{type}
-		{value}
+		bind:value
 		{autocomplete}
-		required
+		{inputmode}
+		{placeholder}
+		{maxlength}
+		{required}
 		aria-invalid={invalid}
-		aria-describedby={describedBy}
-		class="h-12 rounded-control border bg-forest-950 px-3.5 text-base text-beige-100 placeholder:text-slate-500
-			{invalid ? 'border-coral-400' : 'border-forest-600'}"
+		aria-describedby={[describedBy, hintId].filter(Boolean).join(' ') || undefined}
+		class={fieldInputClass(invalid)}
 	/>
+	{#if hint}
+		<p id={hintId} class={FIELD_HINT_CLASS}>{hint}</p>
+	{/if}
 </div>
