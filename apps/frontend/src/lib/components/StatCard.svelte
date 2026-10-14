@@ -14,7 +14,7 @@
 	const toneClass = { neutral: 'text-sage-300', income: 'text-dino-400', expense: 'text-coral-400' };
 </script>
 
-<div class="flex flex-col gap-2 rounded-card border border-forest-600 bg-forest-800 p-4">
+<div class="flex h-full flex-col gap-2 rounded-card border border-forest-600 bg-forest-800 p-4">
 	<div class="flex items-center gap-2 text-sm text-sage-300">
 		<Icon class="size-4 shrink-0 {toneClass[tone]}" aria-hidden="true" />
 		<span>{label}</span>
