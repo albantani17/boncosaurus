@@ -6,3 +6,6 @@ export * from './workspace-members';
 export * from './accounts';
 export * from './categories';
 export * from './transactions';
+export * from './ai-providers';
+export * from './chat-conversations';
+export * from './chat-messages';

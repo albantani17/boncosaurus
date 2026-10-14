@@ -16,3 +16,12 @@ export const categoryType = pgEnum('category_type', ['income', 'expense']);
 export const transactionType = pgEnum('transaction_type', ['income', 'expense', 'transfer']);
 
 export const transactionSource = pgEnum('transaction_source', ['manual', 'import', 'ai']);
+
+export const aiProviderKind = pgEnum('ai_provider_kind', [
+  'anthropic',
+  'openai',
+  'google',
+  'openai_compatible'
+]);
+
+export const chatRole = pgEnum('chat_role', ['user', 'assistant']);
