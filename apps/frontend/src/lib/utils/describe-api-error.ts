@@ -13,6 +13,15 @@ const MESSAGES: Record<string, string> = {
 	INVALID_CREDENTIALS: 'Kata sandi saat ini salah.',
 	PASSWORD_REQUIRED: 'Masukkan kata sandi saat ini untuk mengganti email.',
 	SAME_PASSWORD: 'Kata sandi baru harus berbeda dari yang lama.',
+	AI_NOT_CONFIGURED: 'Fitur AI belum aktif. Isi AI_SECRET_KEY di server lalu mulai ulang backend.',
+	AI_PROVIDER_MISSING: 'Tambahkan provider AI dulu di Pengaturan AI.',
+	AI_PROVIDER_FAILED: 'Provider AI tidak merespons. Periksa API key, model, dan base URL.',
+	AI_PROVIDER_NAME_TAKEN: 'Nama provider sudah dipakai.',
+	BASE_URL_REQUIRED: 'Base URL wajib diisi untuk provider OpenAI-compatible.',
+	INVALID_BASE_URL: 'Base URL harus berupa alamat http(s) yang valid.',
+	FORBIDDEN_ROLE: 'Hanya pemilik atau admin workspace yang bisa mengubah pengaturan AI.',
+	DRAFT_NOT_PENDING: 'Draf transaksi ini sudah diproses.',
+	EMPTY_MESSAGE: 'Pesan tidak boleh kosong.',
 	VALIDATION_ERROR: 'Data yang dikirim tidak valid. Periksa lagi isian formulir.'
 };
 
