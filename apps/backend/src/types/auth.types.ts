@@ -2,6 +2,7 @@ import type { refreshTokens, users } from '../db/schema';
 
 export type UserRecord = typeof users.$inferSelect;
 export type PublicUser = Pick<UserRecord, 'id' | 'email' | 'name'>;
+export type ProfilePatch = Partial<Pick<UserRecord, 'name' | 'email'>>;
 
 export type RefreshTokenRecord = typeof refreshTokens.$inferSelect;
 export type NewRefreshToken = Pick<

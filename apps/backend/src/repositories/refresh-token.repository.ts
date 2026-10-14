@@ -9,6 +9,7 @@ export type RefreshTokenRepository = {
   // Revokes `currentId` and stores `next` atomically; false if `currentId` was already revoked.
   rotate(currentId: string, next: NewRefreshToken): Promise<boolean>;
   revokeFamily(familyId: string): Promise<void>;
+  revokeAllForUser(userId: string): Promise<void>;
 };
 
 export const refreshTokenRepository: RefreshTokenRepository = {
@@ -39,5 +40,12 @@ export const refreshTokenRepository: RefreshTokenRepository = {
       .update(refreshTokens)
       .set({ revokedAt: new Date() })
       .where(and(eq(refreshTokens.familyId, familyId), isNull(refreshTokens.revokedAt)));
+  },
+
+  async revokeAllForUser(userId) {
+    await db
+      .update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)));
   }
 };

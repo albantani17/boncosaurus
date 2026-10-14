@@ -9,11 +9,12 @@ import { createAccessTokenService } from './services/access-token.service';
 import { createAccountService } from './services/account.service';
 import { createAuthService } from './services/auth.service';
 import { createCategoryService } from './services/category.service';
+import { createProfileService } from './services/profile.service';
 import { createReportService } from './services/report.service';
 import { createTransactionService } from './services/transaction.service';
 import { createWorkspaceService } from './services/workspace.service';
 import { parseAuthConfig } from './utils/parse-auth-config';
-import { DUMMY_PASSWORD_HASH, verifyPassword } from './utils/password';
+import { DUMMY_PASSWORD_HASH, hashPassword, verifyPassword } from './utils/password';
 import { generateRefreshToken, hashRefreshToken } from './utils/refresh-token';
 
 export const authConfig = parseAuthConfig(process.env);
@@ -35,6 +36,13 @@ export const authService = createAuthService({
   now: () => new Date(),
   accessTtlSeconds: authConfig.accessTtlSeconds,
   refreshTtlSeconds: authConfig.refreshTtlSeconds
+});
+
+export const profileService = createProfileService({
+  users: userRepository,
+  refreshTokens: refreshTokenRepository,
+  verifyPassword,
+  hashPassword
 });
 
 export const workspaceService = createWorkspaceService(workspaceRepository);

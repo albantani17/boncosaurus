@@ -20,7 +20,7 @@ const createHarness = (
   const revokedFamilies: string[] = [];
   let tokenCounter = 0;
 
-  const refreshTokens: RefreshTokenRepository = {
+  const refreshTokens: Omit<RefreshTokenRepository, 'revokeAllForUser'> = {
     insert: async (values: NewRefreshToken) => {
       stored.push({ id: `rt-${stored.length + 1}`, revokedAt: null, createdAt: NOW, ...values });
     },
@@ -228,5 +228,22 @@ describe('getProfile', () => {
     const { service } = createHarness({ users: [] });
 
     await expect(service.getProfile('user-1')).rejects.toMatchObject({ status: 401 });
+  });
+});
+
+describe('startSession', () => {
+  test('stores a new refresh token family and returns fresh tokens', async () => {
+    const { service, stored } = createHarness();
+
+    const session = await service.startSession('user-1');
+
+    expect(session).toEqual({
+      accessToken: 'access:user-1',
+      expiresIn: 900,
+      refreshToken: 'refresh-1',
+      refreshMaxAgeSeconds: 3600
+    });
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toMatchObject({ userId: 'user-1', familyId: 'family-1', tokenHash: 'h(refresh-1)' });
   });
 });

@@ -5,9 +5,9 @@ import type { WorkspaceRepository } from '../repositories/workspace.repository';
 import type { AuthTokens, PublicUser, WorkspaceMembership } from '../types/auth.types';
 
 type Dependencies = {
-  users: UserRepository;
+  users: Pick<UserRepository, 'findByEmail' | 'findById'>;
   workspaces: Pick<WorkspaceRepository, 'listForUser'>;
-  refreshTokens: RefreshTokenRepository;
+  refreshTokens: Omit<RefreshTokenRepository, 'revokeAllForUser'>;
   verifyPassword: (password: string, hash: string) => Promise<boolean>;
   dummyPasswordHash: string;
   signAccessToken: (userId: string) => Promise<string>;
@@ -47,6 +47,8 @@ export function createAuthService(deps: Dependencies) {
   }
 
   return {
+    startSession,
+
     async login(email: string, password: string): Promise<LoginResult> {
       const user = await deps.users.findByEmail(email.trim().toLowerCase());
       const passwordMatches = await deps.verifyPassword(
