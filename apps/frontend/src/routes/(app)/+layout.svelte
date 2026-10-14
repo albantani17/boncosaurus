@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import CircleUser from '@lucide/svelte/icons/circle-user';
 	import LogOut from '@lucide/svelte/icons/log-out';
 	import Sparkles from '@lucide/svelte/icons/sparkles';
@@ -8,6 +9,9 @@
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();
+
+	// The assistant renders its own full-height chat layout.
+	const fullBleed = $derived(page.route.id?.startsWith('/(app)/asisten') ?? false);
 </script>
 
 <div class="min-h-dvh md:flex">
@@ -43,9 +47,15 @@
 			</div>
 		</header>
 
-		<main class="mx-auto flex max-w-6xl flex-col gap-6 px-4 pt-6 pb-28 md:px-6 md:pb-10 lg:px-8">
-			{@render children()}
-		</main>
+		{#if fullBleed}
+			<main class="min-w-0">
+				{@render children()}
+			</main>
+		{:else}
+			<main class="mx-auto flex max-w-6xl flex-col gap-6 px-4 pt-6 pb-28 md:px-6 md:pb-10 lg:px-8">
+				{@render children()}
+			</main>
+		{/if}
 	</div>
 </div>
 

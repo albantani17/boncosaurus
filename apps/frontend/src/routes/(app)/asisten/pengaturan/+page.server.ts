@@ -1,18 +1,12 @@
 import { ApiError } from '#lib/server/api/api-error.ts';
-import { backendFor } from '#lib/server/api/backend.ts';
-import { loadAiProviders } from '#lib/server/services/load-ai-providers.ts';
 import { requireRecordId } from '#lib/server/services/require-record-id.ts';
 import { formFailure, runBackendAction } from '#lib/server/services/run-backend-action.ts';
 import { parseAiProviderForm } from '#lib/utils/parse-ai-provider-form.ts';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, fetch, parent }) => {
+export const load: PageServerLoad = async ({ parent }) => {
 	const { workspace } = await parent();
-	const client = backendFor(fetch, { accessToken: locals.accessToken, workspaceId: workspace.id });
-	return {
-		...(await loadAiProviders(client)),
-		canManage: workspace.role === 'owner' || workspace.role === 'admin'
-	};
+	return { canManage: workspace.role === 'owner' || workspace.role === 'admin' };
 };
 
 export const actions: Actions = {

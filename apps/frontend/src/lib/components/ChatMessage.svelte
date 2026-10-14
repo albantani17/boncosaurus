@@ -23,6 +23,10 @@
 	let { message, accounts, categories, interactive, onProposalResolved }: Props = $props();
 
 	const isUser = $derived(message.role === 'user');
+	// A streaming reply starts with bookkeeping parts only; skip the bubble until something is visible.
+	const hasVisibleParts = $derived(
+		message.parts.some((part) => (part.type === 'text' && part.text.length > 0) || getToolPartName(part) !== null)
+	);
 </script>
 
 {#snippet toolActivity(part: ToolPart, name: string)}
@@ -45,33 +49,35 @@
 	{/if}
 {/snippet}
 
-<li class="flex {isUser ? 'justify-end' : 'justify-start'}">
-	<div
-		class="flex max-w-[min(100%,40rem)] flex-col gap-2 text-sm
-			{isUser ? 'rounded-card rounded-br-md bg-forest-700 px-4 py-3 text-beige-100' : 'w-full text-beige-200'}"
-	>
-		{#each message.parts as part, index (index)}
-			{@const toolName = getToolPartName(part)}
-			{#if part.type === 'text'}
-				{#if isUser}
-					<p class="whitespace-pre-wrap break-words">{part.text}</p>
-				{:else}
-					<ChatMarkdown text={part.text} />
+{#if hasVisibleParts}
+	<li class="flex {isUser ? 'justify-end' : 'justify-start'}">
+		<div
+			class="flex max-w-[min(100%,40rem)] flex-col gap-2 text-sm
+				{isUser ? 'rounded-card rounded-br-md bg-forest-700 px-4 py-3 text-beige-100' : 'w-full rounded-card rounded-bl-md border border-forest-600/60 bg-forest-900/80 px-4 py-3 text-beige-200'}"
+		>
+			{#each message.parts as part, index (index)}
+				{@const toolName = getToolPartName(part)}
+				{#if part.type === 'text'}
+					{#if isUser}
+						<p class="whitespace-pre-wrap break-words">{part.text}</p>
+					{:else}
+						<ChatMarkdown text={part.text} />
+					{/if}
+				{:else if toolName === 'proposeTransaction' && (part as ToolPart).state === 'output-available'}
+					{@const toolPart = part as ToolPart}
+					<TransactionDraftCard
+						proposal={toolPart.output as TransactionProposal}
+						messageId={message.id}
+						toolCallId={toolPart.toolCallId}
+						{accounts}
+						{categories}
+						{interactive}
+						onResolved={(status) => onProposalResolved(toolPart.toolCallId, status)}
+					/>
+				{:else if toolName}
+					{@render toolActivity(part as ToolPart, toolName)}
 				{/if}
-			{:else if toolName === 'proposeTransaction' && (part as ToolPart).state === 'output-available'}
-				{@const toolPart = part as ToolPart}
-				<TransactionDraftCard
-					proposal={toolPart.output as TransactionProposal}
-					messageId={message.id}
-					toolCallId={toolPart.toolCallId}
-					{accounts}
-					{categories}
-					{interactive}
-					onResolved={(status) => onProposalResolved(toolPart.toolCallId, status)}
-				/>
-			{:else if toolName}
-				{@render toolActivity(part as ToolPart, toolName)}
-			{/if}
-		{/each}
-	</div>
-</li>
+			{/each}
+		</div>
+	</li>
+{/if}

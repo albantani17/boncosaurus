@@ -7,7 +7,7 @@
 		busy: boolean;
 		disabled?: boolean;
 		onSend: (text: string) => void;
-		onStop: () => void;
+		onStop?: () => void;
 	};
 
 	let { value = $bindable(''), busy, disabled = false, onSend, onStop }: Props = $props();
@@ -45,7 +45,7 @@
 		placeholder={disabled ? 'Tambahkan provider AI dulu di pengaturan.' : 'Tanya soal keuanganmu atau catat transaksi…'}
 		class="max-h-48 min-h-11 flex-1 resize-none [field-sizing:content] bg-transparent px-2 py-2.5 text-sm text-beige-100 placeholder:text-sage-400 focus:outline-none"
 	></textarea>
-	{#if busy}
+	{#if busy && onStop}
 		<button
 			type="button"
 			onclick={onStop}

@@ -1,25 +1,18 @@
 import { redirect } from '@sveltejs/kit';
-import { backendFor } from '#lib/server/api/backend.ts';
-import { loadAiProviders } from '#lib/server/services/load-ai-providers.ts';
 import { runBackendAction } from '#lib/server/services/run-backend-action.ts';
 import type { Conversation } from '#lib/types/ai.types.ts';
-import type { Actions, PageServerLoad } from './$types';
-
-export const load: PageServerLoad = async ({ locals, fetch, parent, depends }) => {
-	depends('app:conversations');
-	const { workspace } = await parent();
-	const client = backendFor(fetch, { accessToken: locals.accessToken, workspaceId: workspace.id });
-	const ai = await loadAiProviders(client);
-	return {
-		...ai,
-		conversations: ai.aiReady ? await client.get<Conversation[]>('/chat/conversations') : []
-	};
-};
+import { isUuid } from '#lib/utils/is-uuid.ts';
+import { readFormText } from '#lib/utils/read-form-text.ts';
+import type { Actions } from './$types';
 
 export const actions: Actions = {
 	new: async (event) => {
+		const providerId = readFormText(await event.request.formData(), 'providerId');
 		const outcome = await runBackendAction(event, async (client) => {
-			const response = await client.request('/chat/conversations', { method: 'POST', body: {} });
+			const response = await client.request('/chat/conversations', {
+				method: 'POST',
+				body: providerId && isUuid(providerId) ? { providerId } : {}
+			});
 			return (await response.json()) as Conversation;
 		});
 		if (!outcome.ok) return outcome.failure;
