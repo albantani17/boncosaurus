@@ -2,6 +2,7 @@ import { aiProviderRepository } from './repositories/ai-provider.repository';
 import { accountRepository } from './repositories/account.repository';
 import { chatRepository } from './repositories/chat.repository';
 import { categoryRepository } from './repositories/category.repository';
+import { importRepository } from './repositories/import.repository';
 import { refreshTokenRepository } from './repositories/refresh-token.repository';
 import { reportRepository } from './repositories/report.repository';
 import { transactionRepository } from './repositories/transaction.repository';
@@ -13,6 +14,9 @@ import { createAccountService } from './services/account.service';
 import { createAuthService } from './services/auth.service';
 import { createChatService } from './services/chat.service';
 import { createCategoryService } from './services/category.service';
+import { createImportAi } from './services/import-ai';
+import { createImportCommitService } from './services/import-commit.service';
+import { createImportPreviewService } from './services/import-preview.service';
 import { createProfileService } from './services/profile.service';
 import { createReportService } from './services/report.service';
 import { createTransactionService } from './services/transaction.service';
@@ -89,4 +93,21 @@ export const chatService = createChatService({
   createModel: createLanguageModel,
   generateId: () => Bun.randomUUIDv7(),
   now: () => new Date()
+});
+
+export const importPreviewService = createImportPreviewService({
+  ai: createImportAi(createLanguageModel),
+  providers: aiProviderService,
+  workspaces: workspaceRepository,
+  accounts: accountRepository,
+  categories: categoryRepository,
+  imports: importRepository,
+  now: () => new Date()
+});
+
+export const importCommitService = createImportCommitService({
+  accounts: accountRepository,
+  categories: categoryRepository,
+  imports: importRepository,
+  generateId: () => Bun.randomUUIDv7()
 });
