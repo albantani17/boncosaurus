@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Plus from '@lucide/svelte/icons/plus';
 	import Scale from '@lucide/svelte/icons/scale';
 	import TrendingDown from '@lucide/svelte/icons/trending-down';
 	import TrendingUp from '@lucide/svelte/icons/trending-up';
@@ -11,6 +12,7 @@
 	import RecentTransactions from '#lib/components/RecentTransactions.svelte';
 	import StatCard from '#lib/components/StatCard.svelte';
 	import { MASCOT_MESSAGES } from '#lib/data/mascot-messages.ts';
+	import { NEW_TRANSACTION_HREF } from '#lib/data/nav-items.ts';
 	import { formatCurrency } from '#lib/utils/format-currency.ts';
 	import type { PageProps } from './$types';
 
@@ -29,9 +31,18 @@
 	<title>Dashboard · Boncosaurus</title>
 </svelte:head>
 
-<div class="flex flex-col gap-1">
-	<h1 class="text-2xl font-semibold tracking-tight lg:text-3xl">Halo, {data.user.name}</h1>
-	<p class="text-sm text-sage-300">Ringkasan keuangan {dashboard.monthLabel}</p>
+<div class="flex items-end justify-between gap-4">
+	<div class="flex flex-col gap-1">
+		<h1 class="text-2xl font-semibold tracking-tight lg:text-3xl">Halo, {data.user.name}</h1>
+		<p class="text-sm text-sage-300">Ringkasan keuangan {dashboard.monthLabel}</p>
+	</div>
+	<a
+		href={NEW_TRANSACTION_HREF}
+		class="hidden h-11 items-center gap-2 rounded-control bg-dino-400 px-4 text-sm font-semibold text-forest-950 hover:brightness-110 md:inline-flex"
+	>
+		<Plus class="size-4" aria-hidden="true" />
+		Tambah transaksi
+	</a>
 </div>
 
 <section
