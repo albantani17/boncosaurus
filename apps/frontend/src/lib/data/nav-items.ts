@@ -8,10 +8,10 @@ export const ASSISTANT_HREF = '/asisten';
 
 export const NAV_ITEMS = [
 	{ label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+	{ label: 'Asisten', href: ASSISTANT_HREF, icon: Sparkles },
 	{ label: 'Transaksi', href: '/transaksi', icon: ArrowLeftRight },
 	{ label: 'Akun', href: '/akun', icon: Wallet },
-	{ label: 'Kategori', href: '/kategori', icon: Tags },
-	{ label: 'Asisten', href: ASSISTANT_HREF, icon: Sparkles }
+	{ label: 'Kategori', href: '/kategori', icon: Tags }
 ];
 
 // The mobile bar keeps two items on each side of the add button; the assistant lives in the mobile header.
