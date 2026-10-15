@@ -12,6 +12,7 @@
         "@ai-sdk/google": "^4.0.95",
         "@ai-sdk/openai": "^4.0.93",
         "@ai-sdk/openai-compatible": "^3.0.68",
+        "@boncosaurus/shared": "workspace:*",
         "@elysiajs/cors": "^1.4.2",
         "ai": "^7.0.140",
         "drizzle-orm": "^0.45.4",
@@ -34,6 +35,7 @@
       "version": "0.0.1",
       "devDependencies": {
         "@ai-sdk/svelte": "^5.0.140",
+        "@boncosaurus/shared": "workspace:*",
         "@fontsource-variable/inter": "^5.3.0",
         "@lucide/svelte": "^1.57.0",
         "@sveltejs/adapter-node": "^6.0.0",
@@ -47,6 +49,13 @@
         "tailwindcss": "^4.3.3",
         "typescript": "^6.0.3",
         "vite": "^8.3.0",
+      },
+    },
+    "packages/shared": {
+      "name": "@boncosaurus/shared",
+      "devDependencies": {
+        "@types/bun": "^1.4.3",
+        "typescript": "^7.0.2",
       },
     },
   },
@@ -66,6 +75,8 @@
     "@ai-sdk/provider-utils": ["@ai-sdk/provider-utils@5.0.59", "", { "dependencies": { "@ai-sdk/provider": "4.0.27", "@standard-schema/spec": "^1.1.0", "@workflow/serde": "4.1.0", "eventsource-parser": "^3.0.8", "undici": "^7.29.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-eaXBTkguxBFzS+KvxGRsbdkX9A7+R1g/C4jWx9mup0oSs3Cx5Mb427/byGpD2XL8SnMYT9O8LmXBmrgo+N3TJw=="],
 
     "@ai-sdk/svelte": ["@ai-sdk/svelte@5.0.140", "", { "dependencies": { "@ai-sdk/provider-utils": "5.0.59", "ai": "7.0.140" }, "peerDependencies": { "svelte": "^5.31.0" } }, "sha512-WLQ3m5l1i66h6VS2dF4NHaSsHgOg6MWmBcBKv2rwq1v+t9Q7E/QrXE8SFiBGZ6eYqc+dh0/PPQa+XfiqT1Hotg=="],
+
+    "@boncosaurus/shared": ["@boncosaurus/shared@workspace:packages/shared"],
 
     "@borewit/text-codec": ["@borewit/text-codec@0.2.2", "", {}, "sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ=="],
 

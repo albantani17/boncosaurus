@@ -10,6 +10,7 @@
     "db:studio": "bun --env-file=../../.env run drizzle-kit studio"
   },
   "dependencies": {
+    "@boncosaurus/shared": "workspace:*",
     "@ai-sdk/anthropic": "^4.0.79",
     "@ai-sdk/google": "^4.0.95",
     "@ai-sdk/openai": "^4.0.93",

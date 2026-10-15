@@ -1,7 +1,10 @@
 {
   "name": "boncosaurus",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "bun run --parallel dev:be dev:fe",
     "dev:be": "bun run --filter backend dev",

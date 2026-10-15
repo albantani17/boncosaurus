@@ -3,7 +3,9 @@ WORKDIR /app
 COPY package.json bun.lock ./
 COPY apps/backend/package.json apps/backend/
 COPY apps/frontend/package.json apps/frontend/
+COPY packages/shared/package.json packages/shared/
 RUN bun install --frozen-lockfile --filter frontend
+COPY packages/shared packages/shared
 COPY apps/frontend apps/frontend
 WORKDIR /app/apps/frontend
 RUN bun run build
