@@ -8,21 +8,21 @@ import {
   toUIMessageStream,
   validateUIMessages
 } from 'ai';
-import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from '../errors/app-error';
-import type { ChatRepository } from '../repositories/chat.repository';
-import type { WorkspaceRepository } from '../repositories/workspace.repository';
-import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '../types/ai.types';
-import type { Transaction } from '../types/finance.types';
-import { buildChatSystemPrompt } from '../utils/chat/build-chat-system-prompt';
-import type { LanguageModelSettings } from '../utils/ai/create-language-model';
-import { deriveConversationTitle } from '../utils/chat/derive-conversation-title';
-import { describeProviderError } from '../utils/ai/describe-provider-error';
-import { describeZonedNow } from '../utils/describe-zoned-now';
-import { findProposal, replaceProposal } from '../utils/chat/proposal-parts';
-import { toUserTextParts } from '../utils/chat/to-user-text-parts';
-import type { ActorContext, AiProviderService } from './ai-provider.service';
+import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from '../../errors/app-error';
+import type { ChatRepository } from '../../repositories/chat.repository';
+import type { WorkspaceRepository } from '../../repositories/workspace.repository';
+import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '../../types/ai.types';
+import type { Transaction } from '../../types/finance.types';
+import { buildChatSystemPrompt } from '../../utils/chat/build-chat-system-prompt';
+import type { LanguageModelSettings } from '../../utils/ai/create-language-model';
+import { deriveConversationTitle } from '../../utils/chat/derive-conversation-title';
+import { describeProviderError } from '../../utils/ai/describe-provider-error';
+import { describeZonedNow } from '../../utils/describe-zoned-now';
+import { findProposal, replaceProposal } from '../../utils/chat/proposal-parts';
+import { toUserTextParts } from '../../utils/chat/to-user-text-parts';
+import type { ActorContext, AiProviderService } from '../ai-provider.service';
 import { type ChatToolDependencies, createChatTools } from './chat-tools';
-import type { CreateTransactionInput } from './transaction.service';
+import type { CreateTransactionInput } from '../transaction.service';
 
 export type ChatMessage = Pick<ChatMessageRecord, 'id' | 'role' | 'parts' | 'createdAt'>;
 export type ConversationWithMessages = ChatConversation & { messages: ChatMessage[] };

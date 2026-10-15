@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { RefreshTokenRepository } from '../repositories/refresh-token.repository';
-import type { NewRefreshToken, RefreshTokenRecord, UserRecord } from '../types/auth.types';
+import type { RefreshTokenRepository } from '../../repositories/refresh-token.repository';
+import type { NewRefreshToken, RefreshTokenRecord, UserRecord } from '../../types/auth.types';
 import { createAuthService } from './auth.service';
 
 const NOW = new Date('2026-10-13T12:00:00Z');

@@ -1,8 +1,8 @@
-import { UnauthorizedError } from '../errors/app-error';
-import type { RefreshTokenRepository } from '../repositories/refresh-token.repository';
-import type { UserRepository } from '../repositories/user.repository';
-import type { WorkspaceRepository } from '../repositories/workspace.repository';
-import type { AuthTokens, PublicUser, WorkspaceMembership } from '../types/auth.types';
+import { UnauthorizedError } from '../../errors/app-error';
+import type { RefreshTokenRepository } from '../../repositories/refresh-token.repository';
+import type { UserRepository } from '../../repositories/user.repository';
+import type { WorkspaceRepository } from '../../repositories/workspace.repository';
+import type { AuthTokens, PublicUser, WorkspaceMembership } from '../../types/auth.types';
 
 type Dependencies = {
   users: Pick<UserRepository, 'findByEmail' | 'findById'>;

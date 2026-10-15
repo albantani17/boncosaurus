@@ -1,8 +1,8 @@
-import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from '../errors/app-error';
-import type { RefreshTokenRepository } from '../repositories/refresh-token.repository';
-import type { UserRepository } from '../repositories/user.repository';
-import type { ProfilePatch, PublicUser, UserRecord } from '../types/auth.types';
-import { isUniqueViolation } from '../utils/is-unique-violation';
+import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from '../../errors/app-error';
+import type { RefreshTokenRepository } from '../../repositories/refresh-token.repository';
+import type { UserRepository } from '../../repositories/user.repository';
+import type { ProfilePatch, PublicUser, UserRecord } from '../../types/auth.types';
+import { isUniqueViolation } from '../../utils/is-unique-violation';
 
 type Dependencies = {
   users: Pick<UserRepository, 'findById' | 'updateProfile' | 'setPasswordHash'>;

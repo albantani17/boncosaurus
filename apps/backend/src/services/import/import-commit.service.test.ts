@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import type { Account, Category } from '../types/finance.types';
-import type { ImportBatch } from '../repositories/import.repository';
-import type { ImportCommitPayload } from '../types/import.types';
+import type { Account, Category } from '../../types/finance.types';
+import type { ImportBatch } from '../../repositories/import.repository';
+import type { ImportCommitPayload } from '../../types/import.types';
 import { createImportCommitService } from './import-commit.service';
 
 const actor = { userId: 'user-1', workspaceId: 'ws-1' };

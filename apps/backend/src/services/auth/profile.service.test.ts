@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { UserRecord } from '../types/auth.types';
+import type { UserRecord } from '../../types/auth.types';
 import { createProfileService } from './profile.service';
 
 const user: UserRecord = {

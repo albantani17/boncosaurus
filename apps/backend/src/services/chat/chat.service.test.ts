@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'bun:test';
 import { simulateReadableStream } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
-import type { ChatRepository } from '../repositories/chat.repository';
-import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '../types/ai.types';
-import type { Transaction } from '../types/finance.types';
-import { findProposal } from '../utils/chat/proposal-parts';
-import type { AccountWithBalance } from './account.service';
+import type { ChatRepository } from '../../repositories/chat.repository';
+import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '../../types/ai.types';
+import type { Transaction } from '../../types/finance.types';
+import { findProposal } from '../../utils/chat/proposal-parts';
+import type { AccountWithBalance } from '../account.service';
 import { createChatService } from './chat.service';
-import type { CreateTransactionInput } from './transaction.service';
+import type { CreateTransactionInput } from '../transaction.service';
 
 const now = new Date('2026-10-14T08:00:00Z');
 const actor = { userId: 'u1', workspaceId: 'ws' };

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { Account, Category } from '../types/finance.types';
-import type { ColumnMapping } from '../types/import.types';
+import type { Account, Category } from '../../types/finance.types';
+import type { ColumnMapping } from '../../types/import.types';
 import type { ImportAi } from './import-ai';
 import { createImportPreviewService } from './import-preview.service';
 
