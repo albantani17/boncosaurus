@@ -39,6 +39,7 @@ const makeTransaction = (overrides: Partial<Transaction> = {}): Transaction => (
   categoryId: null,
   amount: 1000,
   toAmount: null,
+  fee: null,
   occurredAt: now,
   note: null,
   source: 'manual',

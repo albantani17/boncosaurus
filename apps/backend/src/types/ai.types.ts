@@ -23,6 +23,7 @@ export type TransactionProposalDraft = {
   categoryId: string | null;
   amount: number;
   toAmount: number | null;
+  fee?: number | null;
   occurredAt: string;
   note: string | null;
 };

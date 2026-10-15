@@ -14,6 +14,7 @@ export const createTransactionBody = t.Object({
   categoryId: t.Optional(nullableUuid),
   amount,
   toAmount: t.Optional(nullableAmount),
+  fee: t.Optional(nullableAmount),
   occurredAt: t.Date(),
   note: t.Optional(note)
 });
@@ -25,6 +26,7 @@ export const updateTransactionBody = t.Object({
   categoryId: t.Optional(nullableUuid),
   amount: t.Optional(amount),
   toAmount: t.Optional(nullableAmount),
+  fee: t.Optional(nullableAmount),
   occurredAt: t.Optional(t.Date()),
   note: t.Optional(note)
 });

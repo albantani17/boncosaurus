@@ -123,6 +123,7 @@ export function createChatTools(deps: ChatToolDependencies, workspaceId: string)
           type: row.type,
           amount: row.amount,
           toAmount: row.toAmount,
+          fee: row.fee,
           occurredAt: row.occurredAt.toISOString(),
           account: names.accounts.get(row.accountId) ?? null,
           toAccount: row.toAccountId ? (names.accounts.get(row.toAccountId) ?? null) : null,
@@ -136,7 +137,7 @@ export function createChatTools(deps: ChatToolDependencies, workspaceId: string)
       description:
         'Prepare a new transaction for the user to confirm. Nothing is saved until the user confirms it in the app. ' +
         'Use account and category ids from the context. Transfers need toAccountId and no category; ' +
-        'toAmount is only for transfers between accounts with different currencies.',
+        'toAmount is only for transfers between accounts with different currencies. fee is an optional admin fee for transfers.',
       inputSchema: z.object({
         type: transactionType,
         accountId: z.string(),
@@ -144,6 +145,7 @@ export function createChatTools(deps: ChatToolDependencies, workspaceId: string)
         categoryId: z.string().nullish(),
         amount: z.number().int().positive().describe('Whole units of the account currency, no decimals'),
         toAmount: z.number().int().positive().nullish(),
+        fee: z.number().int().positive().nullish().describe('Transfer admin fee in the source account currency; transfers only'),
         occurredAt: isoDate,
         note: z.string().max(500).nullish()
       }),
@@ -158,6 +160,7 @@ export function createChatTools(deps: ChatToolDependencies, workspaceId: string)
           categoryId: input.categoryId ?? null,
           amount: input.amount,
           toAmount: input.toAmount ?? null,
+          fee: input.fee ?? null,
           occurredAt: occurredAt.toISOString(),
           note: input.note?.trim() || null
         };

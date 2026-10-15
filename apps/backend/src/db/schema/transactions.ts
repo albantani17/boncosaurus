@@ -20,6 +20,7 @@ export const transactions = pgTable(
     categoryId: uuid('category_id'),
     amount: money('amount').notNull(),
     toAmount: money('to_amount'),
+    fee: money('fee'),
     occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
     note: text('note'),
     source: transactionSource('source').notNull().default('manual'),
@@ -48,6 +49,8 @@ export const transactions = pgTable(
       'transactions_to_amount_positive',
       sql`${table.toAmount} IS NULL OR ${table.toAmount} > 0`
     ),
+    check('transactions_fee_positive', sql`${table.fee} IS NULL OR ${table.fee} > 0`),
+    check('transactions_fee_transfer_only', sql`${table.type} = 'transfer' OR ${table.fee} IS NULL`),
     check(
       'transactions_transfer_shape',
       sql`${table.type} <> 'transfer' OR (${table.toAccountId} IS NOT NULL AND ${table.categoryId} IS NULL AND ${table.toAccountId} <> ${table.accountId})`

@@ -20,7 +20,7 @@ export type CreateTransactionInput = Pick<
   'type' | 'accountId' | 'amount' | 'occurredAt'
 > &
   Partial<
-    Pick<NewTransaction, 'toAccountId' | 'categoryId' | 'toAmount' | 'note' | 'source' | 'createdBy'>
+    Pick<NewTransaction, 'toAccountId' | 'categoryId' | 'toAmount' | 'fee' | 'note' | 'source' | 'createdBy'>
   >;
 
 type Dependencies = {
@@ -57,7 +57,8 @@ export function createTransactionService({ transactions, accounts, categories }:
       amount: input.amount,
       toAccountId: input.toAccountId ?? null,
       categoryId: input.categoryId ?? null,
-      toAmount: input.toAmount ?? null
+      toAmount: input.toAmount ?? null,
+      fee: input.fee ?? null
     };
     validateTransaction(draft, await resolveReferences(workspaceId, draft));
   }

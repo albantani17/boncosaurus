@@ -4,7 +4,7 @@ import type { Account, Category, Transaction } from '../types/finance.types';
 export type TransactionDraft = Pick<
   Transaction,
   'type' | 'accountId' | 'toAccountId' | 'categoryId' | 'amount' | 'toAmount'
->;
+> & { fee?: number | null };
 
 export type TransactionReferences = {
   account: Account;
@@ -32,10 +32,10 @@ export function validateTransaction(
     return;
   }
 
-  if (draft.toAccountId != null || draft.toAmount != null) {
+  if (draft.toAccountId != null || draft.toAmount != null || draft.fee != null) {
     throw new BadRequestError(
       'INVALID_TRANSFER_FIELDS',
-      'toAccountId and toAmount are only allowed on transfers'
+      'toAccountId, toAmount and fee are only allowed on transfers'
     );
   }
 

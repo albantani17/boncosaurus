@@ -1,6 +1,7 @@
 import { BadRequestError } from '../errors/app-error';
 import type { ReportRepository } from '../repositories/report.repository';
 import type { DateRange, PeriodSummary } from '../types/report.types';
+import { addFeesToCategoryTotals, addFeesToTotals } from '../utils/add-transfer-fees';
 import { buildCurrencyTotals } from '../utils/build-currency-totals';
 
 export function createReportService(repository: ReportRepository) {
@@ -10,11 +11,16 @@ export function createReportService(repository: ReportRepository) {
         throw new BadRequestError('INVALID_RANGE', '`from` must not be after `to`');
       }
 
-      const [totalsRows, byCategory] = await Promise.all([
+      const [totalsRows, byCategory, fees] = await Promise.all([
         repository.sumByCurrencyAndType(workspaceId, range),
-        repository.sumByCategory(workspaceId, range)
+        repository.sumByCategory(workspaceId, range),
+        repository.sumTransferFees(workspaceId, range)
       ]);
-      return { ...range, totals: buildCurrencyTotals(totalsRows), byCategory };
+      return {
+        ...range,
+        totals: buildCurrencyTotals(addFeesToTotals(totalsRows, fees)),
+        byCategory: addFeesToCategoryTotals(byCategory, fees)
+      };
     }
   };
 }

@@ -153,4 +153,17 @@ describe('validateTransaction', () => {
 
     expect(messageOf(() => validateTransaction(draft, references))).toBe('INVALID_TRANSFER_FIELDS');
   });
+
+  test('accepts an admin fee on a transfer', () => {
+    const draft = makeDraft({ type: 'transfer', toAccountId: 'acc-2', fee: 2500 });
+    const references = { account: makeAccount(), toAccount: makeAccount({ id: 'acc-2' }) };
+
+    expect(messageOf(() => validateTransaction(draft, references))).toBe('no-error');
+  });
+
+  test('rejects a fee on an expense', () => {
+    const draft = makeDraft({ type: 'expense', fee: 2500 });
+
+    expect(messageOf(() => validateTransaction(draft, { account: makeAccount() }))).toBe('INVALID_TRANSFER_FIELDS');
+  });
 });

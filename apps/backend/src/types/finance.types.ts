@@ -21,6 +21,7 @@ export type TransactionPatch = Partial<
     | 'categoryId'
     | 'amount'
     | 'toAmount'
+    | 'fee'
     | 'occurredAt'
     | 'note'
   >

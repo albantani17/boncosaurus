@@ -16,6 +16,7 @@ const createFakeRepository = (overrides: Partial<ReportRepository> = {}) => {
       return [];
     },
     sumByCategory: async () => [],
+    sumTransferFees: async () => [],
     ...overrides
   };
   return { repository, requests };
@@ -63,5 +64,17 @@ describe('getSummary', () => {
     await expect(
       createReportService(repository).getSummary('ws', { from: october.to, to: october.from })
     ).rejects.toMatchObject({ status: 400, code: 'INVALID_RANGE' });
+  });
+
+  test('counts transfer fees as uncategorized expenses', async () => {
+    const { repository } = createFakeRepository({
+      sumByCurrencyAndType: async () => [{ currency: 'IDR', type: 'income', total: 300 }],
+      sumTransferFees: async () => [{ currency: 'IDR', total: 2500 }]
+    });
+
+    const summary = await createReportService(repository).getSummary('ws', october);
+
+    expect(summary.totals).toEqual([{ currency: 'IDR', income: 300, expense: 2500, net: -2200 }]);
+    expect(summary.byCategory).toEqual([{ categoryId: null, type: 'expense', currency: 'IDR', total: 2500 }]);
   });
 });

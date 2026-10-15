@@ -44,6 +44,7 @@ const transaction: Transaction = {
   categoryId: 'cat-1',
   amount: 25_000,
   toAmount: null,
+  fee: null,
   occurredAt: now,
   note: 'Kopi',
   source: 'manual',
@@ -141,11 +142,27 @@ describe('proposeTransaction', () => {
         categoryId: 'cat-1',
         amount: 25_000,
         toAmount: null,
+        fee: null,
         occurredAt: '2026-10-14T02:00:00.000Z',
         note: 'Kopi'
       }
     });
     expect(calls.preview).toHaveLength(1);
+  });
+
+  test('keeps the destination account and admin fee of a transfer', async () => {
+    const { tools, calls } = setup();
+
+    const result = await tools.proposeTransaction.execute!(
+      { type: 'transfer', accountId: 'acc-1', toAccountId: 'acc-2', amount: 100_000, fee: 2_500, occurredAt: input.occurredAt },
+      options
+    );
+
+    expect(result).toMatchObject({
+      status: 'pending',
+      draft: { type: 'transfer', toAccountId: 'acc-2', categoryId: null, amount: 100_000, fee: 2_500 }
+    });
+    expect(calls.preview[0]).toMatchObject({ fee: 2_500, toAccountId: 'acc-2' });
   });
 
   test('reports validation errors so the model can fix them', async () => {

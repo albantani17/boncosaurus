@@ -78,7 +78,9 @@ export const accountRepository: AccountRepository = {
         accountId: transactions.accountId,
         income: sumWhen('income'),
         expense: sumWhen('expense'),
-        transferOut: sumWhen('transfer')
+        transferOut: sql<number>`coalesce(sum(case when ${transactions.type} = 'transfer' then ${transactions.amount} + coalesce(${transactions.fee}, 0) end), 0)`.mapWith(
+          Number
+        )
       })
       .from(transactions)
       .where(and(eq(transactions.workspaceId, workspaceId), isNull(transactions.deletedAt)))
