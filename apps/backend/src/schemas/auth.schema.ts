@@ -1,4 +1,5 @@
-import { t } from 'elysia';
+import type { Assert, IsMutuallyAssignable, LoginBody } from '@boncosaurus/shared';
+import { type Static, t } from 'elysia';
 import { REFRESH_COOKIE_NAME } from '../utils/build-refresh-cookie';
 
 export const loginBody = t.Object({
@@ -9,3 +10,5 @@ export const loginBody = t.Object({
 export const refreshCookie = t.Cookie({
   [REFRESH_COOKIE_NAME]: t.Optional(t.String())
 });
+
+type _LoginContract = Assert<IsMutuallyAssignable<Static<typeof loginBody>, LoginBody>>;

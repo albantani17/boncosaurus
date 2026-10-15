@@ -1,13 +1,13 @@
-import { t } from 'elysia';
+import {
+  ACCOUNT_TYPES,
+  type Assert,
+  type CreateAccountBody,
+  type IsMutuallyAssignable,
+  type UpdateAccountBody
+} from '@boncosaurus/shared';
+import { type Static, t } from 'elysia';
 
-const accountType = t.Union([
-  t.Literal('cash'),
-  t.Literal('bank'),
-  t.Literal('ewallet'),
-  t.Literal('credit_card'),
-  t.Literal('investment'),
-  t.Literal('other')
-]);
+const accountType = t.UnionEnum(ACCOUNT_TYPES);
 const currency = t.String({ pattern: '^[A-Z]{3}$' });
 const name = t.String({ minLength: 1, maxLength: 100 });
 
@@ -27,3 +27,6 @@ export const updateAccountBody = t.Object({
   isArchived: t.Optional(t.Boolean()),
   sortOrder: t.Optional(t.Integer())
 });
+
+type _CreateAccountContract = Assert<IsMutuallyAssignable<Static<typeof createAccountBody>, CreateAccountBody>>;
+type _UpdateAccountContract = Assert<IsMutuallyAssignable<Static<typeof updateAccountBody>, UpdateAccountBody>>;

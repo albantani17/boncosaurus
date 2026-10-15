@@ -1,4 +1,5 @@
-import { t } from 'elysia';
+import type { Assert, DraftReferenceBody, IsMutuallyAssignable } from '@boncosaurus/shared';
+import { type Static, t } from 'elysia';
 
 const uuid = t.String({ format: 'uuid' });
 
@@ -16,3 +17,5 @@ export const draftBody = t.Object({
   messageId: uuid,
   toolCallId: t.String({ minLength: 1, maxLength: 200 })
 });
+
+type _DraftContract = Assert<IsMutuallyAssignable<Static<typeof draftBody>, DraftReferenceBody>>;

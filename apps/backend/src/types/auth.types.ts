@@ -10,12 +10,7 @@ export type NewRefreshToken = Pick<
   'userId' | 'familyId' | 'tokenHash' | 'expiresAt'
 >;
 
-export type WorkspaceMembership = {
-  id: string;
-  name: string;
-  baseCurrency: string;
-  role: 'owner' | 'admin' | 'member';
-};
+export type { WorkspaceMembership } from '@boncosaurus/shared';
 
 export type AuthTokens = {
   accessToken: string;

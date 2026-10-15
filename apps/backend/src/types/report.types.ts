@@ -1,3 +1,4 @@
+import type { CurrencyTotals } from '@boncosaurus/shared';
 import type { Transaction } from './finance.types';
 
 export type DateRange = { from: Date; to: Date };
@@ -11,7 +12,7 @@ export type CategoryTotalRow = {
   total: number;
 };
 
-export type CurrencyTotals = { currency: string; income: number; expense: number; net: number };
+export type { CurrencyTotals } from '@boncosaurus/shared';
 
 export type PeriodSummary = {
   from: Date;

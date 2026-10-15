@@ -1,6 +1,14 @@
-import { t } from 'elysia';
+import {
+  TRANSACTION_TYPES,
+  type Assert,
+  type CreateTransactionBody,
+  type IsMutuallyAssignable,
+  type Jsonify,
+  type UpdateTransactionBody
+} from '@boncosaurus/shared';
+import { type Static, t } from 'elysia';
 
-const transactionType = t.Union([t.Literal('income'), t.Literal('expense'), t.Literal('transfer')]);
+const transactionType = t.UnionEnum(TRANSACTION_TYPES);
 const uuid = t.String({ format: 'uuid' });
 const nullableUuid = t.Union([uuid, t.Null()]);
 const amount = t.Integer({ minimum: 1 });
@@ -40,3 +48,10 @@ export const listTransactionsQuery = t.Object({
   limit: t.Numeric({ minimum: 1, maximum: 200, default: 50 }),
   offset: t.Numeric({ minimum: 0, default: 0 })
 });
+
+type _CreateTransactionContract = Assert<
+  IsMutuallyAssignable<Jsonify<Static<typeof createTransactionBody>>, CreateTransactionBody>
+>;
+type _UpdateTransactionContract = Assert<
+  IsMutuallyAssignable<Jsonify<Static<typeof updateTransactionBody>>, UpdateTransactionBody>
+>;

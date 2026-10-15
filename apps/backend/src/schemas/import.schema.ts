@@ -1,9 +1,14 @@
-import { t } from 'elysia';
+import {
+  ACCOUNT_TYPES,
+  CATEGORY_TYPES,
+  type Assert,
+  type ImportCommitPayload,
+  type IsMutuallyAssignable
+} from '@boncosaurus/shared';
+import { type Static, t } from 'elysia';
 
-const transactionType = t.Union([t.Literal('income'), t.Literal('expense')]);
-const accountType = t.Union(
-  ['cash', 'bank', 'ewallet', 'credit_card', 'investment', 'other'].map((value) => t.Literal(value))
-);
+const transactionType = t.UnionEnum(CATEGORY_TYPES);
+const accountType = t.UnionEnum(ACCOUNT_TYPES);
 const uuid = t.String({ format: 'uuid' });
 const name = t.String({ minLength: 1, maxLength: 100 });
 
@@ -39,3 +44,5 @@ export const commitImportBody = t.Object({
     { maxItems: 2000 }
   )
 });
+
+type _CommitImportContract = Assert<IsMutuallyAssignable<Static<typeof commitImportBody>, ImportCommitPayload>>;

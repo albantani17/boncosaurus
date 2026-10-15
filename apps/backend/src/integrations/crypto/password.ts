@@ -1,4 +1,4 @@
-export const MIN_PASSWORD_LENGTH = 8;
+export { MIN_PASSWORD_LENGTH } from '@boncosaurus/shared';
 
 export const hashPassword = (password: string) => Bun.password.hash(password);
 

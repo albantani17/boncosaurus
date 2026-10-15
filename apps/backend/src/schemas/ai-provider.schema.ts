@@ -1,11 +1,13 @@
-import { t } from 'elysia';
+import {
+  AI_PROVIDER_KINDS,
+  type Assert,
+  type CreateAiProviderBody,
+  type IsMutuallyAssignable,
+  type UpdateAiProviderBody
+} from '@boncosaurus/shared';
+import { type Static, t } from 'elysia';
 
-const kind = t.Union([
-  t.Literal('anthropic'),
-  t.Literal('openai'),
-  t.Literal('google'),
-  t.Literal('openai_compatible')
-]);
+const kind = t.UnionEnum(AI_PROVIDER_KINDS);
 const name = t.String({ minLength: 1, maxLength: 100 });
 const model = t.String({ minLength: 1, maxLength: 200 });
 const baseUrl = t.Union([t.String({ maxLength: 500 }), t.Null()]);
@@ -34,3 +36,10 @@ export const listModelsBody = t.Object({
   apiKey: t.Optional(apiKey),
   providerId: t.Optional(t.String({ format: 'uuid' }))
 });
+
+type _CreateAiProviderContract = Assert<
+  IsMutuallyAssignable<Static<typeof createAiProviderBody>, CreateAiProviderBody>
+>;
+type _UpdateAiProviderContract = Assert<
+  IsMutuallyAssignable<Static<typeof updateAiProviderBody>, UpdateAiProviderBody>
+>;
