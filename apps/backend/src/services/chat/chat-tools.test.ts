@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import { BadRequestError } from '../../errors/app-error';
 import type { Category, Transaction, TransactionFilters } from '../../types/finance.types';
-import type { AccountWithBalance } from '../account.service';
+import type { AccountWithBalance } from '../account/account.service';
 import { type ChatToolDependencies, createChatTools } from './chat-tools';
-import type { CreateTransactionInput } from '../transaction.service';
+import type { CreateTransactionInput } from '../transaction/transaction.service';
 
 const now = new Date('2026-10-14T08:00:00Z');
 const options = { toolCallId: 'call-1', messages: [], context: {} };

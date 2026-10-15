@@ -16,7 +16,7 @@ import { extractPdf } from '../../integrations/files/extract-pdf';
 import { extractText } from '../../integrations/files/extract-text';
 import { extractXlsx } from '../../integrations/files/extract-xlsx';
 import { normalizeName } from '../../domain/import/match-by-name';
-import type { ActorContext, AiProviderService } from '../ai-provider.service';
+import type { ActorContext, AiProviderService } from '../ai-provider/ai-provider.service';
 import type { ImportAi, ImportAiCall } from './import-ai';
 
 export type PreviewImportInput = {

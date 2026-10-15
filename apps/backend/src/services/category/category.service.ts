@@ -1,7 +1,7 @@
-import { BadRequestError, ConflictError, NotFoundError } from '../errors/app-error';
-import type { CategoryRepository } from '../repositories/category.repository';
-import type { Category, CategoryPatch, NewCategory } from '../types/finance.types';
-import { isUniqueViolation } from '../utils/is-unique-violation';
+import { BadRequestError, ConflictError, NotFoundError } from '../../errors/app-error';
+import type { CategoryRepository } from '../../repositories/category.repository';
+import type { Category, CategoryPatch, NewCategory } from '../../types/finance.types';
+import { isUniqueViolation } from '../../utils/is-unique-violation';
 
 export type CreateCategoryInput = Pick<NewCategory, 'name' | 'type'> &
   Partial<Pick<NewCategory, 'parentId' | 'icon' | 'color'>>;

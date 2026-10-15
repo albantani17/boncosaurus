@@ -5,22 +5,22 @@ import {
   ForbiddenError,
   NotFoundError,
   ServiceUnavailableError
-} from '../errors/app-error';
-import type { AiProviderRepository } from '../repositories/ai-provider.repository';
-import type { WorkspaceRepository } from '../repositories/workspace.repository';
+} from '../../errors/app-error';
+import type { AiProviderRepository } from '../../repositories/ai-provider.repository';
+import type { WorkspaceRepository } from '../../repositories/workspace.repository';
 import type {
   AiProviderKind,
   AiProviderPatch,
   AiProviderRecord,
   PublicAiProvider
-} from '../types/ai.types';
-import type { LanguageModelSettings } from '../integrations/ai/create-language-model';
-import { describeProviderError } from '../integrations/ai/describe-provider-error';
-import type { ModelListSettings } from '../integrations/ai/list-provider-models';
-import { isUniqueViolation } from '../utils/is-unique-violation';
-import { maskSecret } from '../utils/mask-secret';
-import { normalizeBaseUrl } from '../integrations/ai/normalize-base-url';
-import type { SecretKey } from '../integrations/crypto/secret-box';
+} from '../../types/ai.types';
+import type { LanguageModelSettings } from '../../integrations/ai/create-language-model';
+import { describeProviderError } from '../../integrations/ai/describe-provider-error';
+import type { ModelListSettings } from '../../integrations/ai/list-provider-models';
+import { isUniqueViolation } from '../../utils/is-unique-violation';
+import { maskSecret } from '../../utils/mask-secret';
+import { normalizeBaseUrl } from '../../integrations/ai/normalize-base-url';
+import type { SecretKey } from '../../integrations/crypto/secret-box';
 
 export type ActorContext = { userId: string; workspaceId: string };
 

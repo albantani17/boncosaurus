@@ -3,7 +3,7 @@ import type {
   BootstrapConfig,
   BootstrapRepository,
   InitialWorkspaceInput
-} from '../types/bootstrap.types';
+} from '../../types/bootstrap.types';
 import { bootstrapFirstRun } from './bootstrap.service';
 
 const config: BootstrapConfig = {

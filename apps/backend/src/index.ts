@@ -6,7 +6,7 @@ import { db } from './db';
 import { errorHandlerPlugin } from './plugins/error-handler.plugin';
 import { apiRoutes } from './routes';
 import { bootstrapRepository } from './repositories/bootstrap.repository';
-import { bootstrapFirstRun } from './services/bootstrap.service';
+import { bootstrapFirstRun } from './services/bootstrap/bootstrap.service';
 import { parseBootstrapConfig } from './config/parse-bootstrap-config';
 import { hashPassword } from './integrations/crypto/password';
 

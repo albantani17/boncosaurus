@@ -20,9 +20,9 @@ import { describeProviderError } from '../../integrations/ai/describe-provider-e
 import { describeZonedNow } from '../../utils/describe-zoned-now';
 import { findProposal, replaceProposal } from '../../domain/chat/proposal-parts';
 import { toUserTextParts } from '../../domain/chat/to-user-text-parts';
-import type { ActorContext, AiProviderService } from '../ai-provider.service';
+import type { ActorContext, AiProviderService } from '../ai-provider/ai-provider.service';
 import { type ChatToolDependencies, createChatTools } from './chat-tools';
-import type { CreateTransactionInput } from '../transaction.service';
+import type { CreateTransactionInput } from '../transaction/transaction.service';
 
 export type ChatMessage = Pick<ChatMessageRecord, 'id' | 'role' | 'parts' | 'createdAt'>;
 export type ConversationWithMessages = ChatConversation & { messages: ChatMessage[] };

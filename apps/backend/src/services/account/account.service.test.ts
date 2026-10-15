@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { AccountRepository } from '../repositories/account.repository';
-import type { Account } from '../types/finance.types';
+import type { AccountRepository } from '../../repositories/account.repository';
+import type { Account } from '../../types/finance.types';
 import { createAccountService } from './account.service';
 
 const now = new Date();

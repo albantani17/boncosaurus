@@ -5,9 +5,9 @@ import type { ChatRepository } from '../../repositories/chat.repository';
 import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '../../types/ai.types';
 import type { Transaction } from '../../types/finance.types';
 import { findProposal } from '../../domain/chat/proposal-parts';
-import type { AccountWithBalance } from '../account.service';
+import type { AccountWithBalance } from '../account/account.service';
 import { createChatService } from './chat.service';
-import type { CreateTransactionInput } from '../transaction.service';
+import type { CreateTransactionInput } from '../transaction/transaction.service';
 
 const now = new Date('2026-10-14T08:00:00Z');
 const actor = { userId: 'u1', workspaceId: 'ws' };

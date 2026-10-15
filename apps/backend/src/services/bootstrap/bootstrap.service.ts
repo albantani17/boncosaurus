@@ -1,10 +1,10 @@
-import { defaultCategories } from '../data/default-categories';
+import { defaultCategories } from '../../data/default-categories';
 import type {
   BootstrapConfig,
   BootstrapRepository,
   BootstrapStatus
-} from '../types/bootstrap.types';
-import { isUniqueViolation } from '../utils/is-unique-violation';
+} from '../../types/bootstrap.types';
+import { isUniqueViolation } from '../../utils/is-unique-violation';
 
 type HashPassword = (password: string) => Promise<string>;
 

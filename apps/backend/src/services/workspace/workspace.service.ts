@@ -1,5 +1,5 @@
-import { BadRequestError, ForbiddenError } from '../errors/app-error';
-import type { WorkspaceRepository } from '../repositories/workspace.repository';
+import { BadRequestError, ForbiddenError } from '../../errors/app-error';
+import type { WorkspaceRepository } from '../../repositories/workspace.repository';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

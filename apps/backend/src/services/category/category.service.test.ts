@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { CategoryRepository } from '../repositories/category.repository';
-import type { Category } from '../types/finance.types';
+import type { CategoryRepository } from '../../repositories/category.repository';
+import type { Category } from '../../types/finance.types';
 import { createCategoryService } from './category.service';
 
 const now = new Date();

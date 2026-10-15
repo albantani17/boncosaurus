@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { TransactionRepository } from '../repositories/transaction.repository';
-import type { Account, Category, Transaction } from '../types/finance.types';
+import type { TransactionRepository } from '../../repositories/transaction.repository';
+import type { Account, Category, Transaction } from '../../types/finance.types';
 import { createTransactionService } from './transaction.service';
 
 const now = new Date();

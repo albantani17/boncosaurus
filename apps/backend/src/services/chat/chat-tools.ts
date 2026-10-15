@@ -5,8 +5,8 @@ import type { TransactionProposal, TransactionProposalDraft } from '../../types/
 import type { Category, Transaction, TransactionFilters } from '../../types/finance.types';
 import type { PeriodSummary } from '../../types/report.types';
 import { parseToolDate } from '../../domain/chat/parse-tool-date';
-import type { AccountWithBalance } from '../account.service';
-import type { CreateTransactionInput } from '../transaction.service';
+import type { AccountWithBalance } from '../account/account.service';
+import type { CreateTransactionInput } from '../transaction/transaction.service';
 
 export type ChatToolDependencies = {
   reports: { getSummary(workspaceId: string, range: { from: Date; to: Date }): Promise<PeriodSummary> };

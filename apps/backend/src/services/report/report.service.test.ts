@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { ReportRepository } from '../repositories/report.repository';
-import type { DateRange } from '../types/report.types';
+import type { ReportRepository } from '../../repositories/report.repository';
+import type { DateRange } from '../../types/report.types';
 import { createReportService } from './report.service';
 
 const october: DateRange = {

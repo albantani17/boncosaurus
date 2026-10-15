@@ -6,7 +6,7 @@ import type { Account, Category, NewAccount, NewCategory, NewTransaction } from 
 import type { ImportCommitPayload, ImportCommitResult } from '../../types/import.types';
 import { findByName, normalizeName } from '../../domain/import/match-by-name';
 import { validateTransaction } from '../../domain/transaction/validate-transaction';
-import type { ActorContext } from '../ai-provider.service';
+import type { ActorContext } from '../ai-provider/ai-provider.service';
 
 type Dependencies = {
   accounts: Pick<AccountRepository, 'list'>;
