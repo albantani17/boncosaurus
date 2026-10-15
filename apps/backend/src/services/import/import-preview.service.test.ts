@@ -68,6 +68,72 @@ describe('previewImport', () => {
     expect(preview.categories).toEqual([{ name: 'Gaji', categoryId: null, type: 'income' }]);
   });
 
+  test('reads xlsx files as tables', async () => {
+    const bytes = new Uint8Array(await Bun.file(`${import.meta.dir}/../../integrations/files/fixtures/statement.xlsx`).arrayBuffer());
+    const { service } = setup({ inferColumnMapping: async () => ({ ...mapping, dateFormat: 'yyyy-MM-dd', decimalSeparator: '.' }) });
+
+    const preview = await service.previewImport(actor, { fileName: 'mutasi.xlsx', bytes });
+
+    expect(preview.kind).toBe('xlsx');
+    expect(preview.rows.map((row) => [row.type, row.amount])).toEqual([
+      ['expense', 25000],
+      ['income', 5000000]
+    ]);
+  });
+
+  test('reads pdf files as text for the AI', async () => {
+    const bytes = new Uint8Array(await Bun.file(`${import.meta.dir}/../../integrations/files/fixtures/statement.pdf`).arrayBuffer());
+    const chunks: string[] = [];
+    const { service } = setup({
+      extractTransactions: async (_call, chunk) => {
+        chunks.push(chunk);
+        return [{ occurredAt: new Date('2025-03-05T05:00:00Z'), type: 'expense', amount: 25000, note: 'Kopi Kenangan', accountName: null, categoryName: 'Makan' }];
+      }
+    });
+
+    const preview = await service.previewImport(actor, { fileName: 'rekening.pdf', bytes });
+
+    expect(preview.kind).toBe('pdf');
+    expect(chunks.join('')).toContain('Kopi Kenangan');
+    expect(preview.rows[0]).toMatchObject({ accountName: 'rekening', categoryName: 'Makan' });
+  });
+
+  test('warns about rows the mapping could not read', async () => {
+    const { service } = setup();
+    const preview = await service.previewImport(actor, {
+      fileName: 'mutasi.csv',
+      bytes: csv('Tanggal,Ket,Jumlah\nbukan tanggal,X,"-1"\n01/10/2026,Warteg,"-25000"\n')
+    });
+    expect(preview.rows).toHaveLength(1);
+    expect(preview.warnings).toEqual(['1 baris dilewati karena tidak bisa dibaca (baris 2…)']);
+  });
+
+  test('rejects a table with more than 2000 rows before calling the AI', async () => {
+    let mappingCalls = 0;
+    const { service } = setup({ inferColumnMapping: async () => (mappingCalls++, mapping) });
+    const body = '01/10/2026,Warteg,-1\n'.repeat(2026);
+    await expect(
+      service.previewImport(actor, { fileName: 'a.csv', bytes: csv(`Tanggal,Ket,Jumlah\n${body}`) })
+    ).rejects.toMatchObject({ code: 'IMPORT_TOO_MANY_ROWS' });
+    expect(mappingCalls).toBe(0);
+  });
+
+  test('rejects text that yields more than 2000 transactions', async () => {
+    const transaction = { occurredAt: new Date('2026-10-01T05:00:00Z'), type: 'expense' as const, amount: 1, note: 'x', accountName: null, categoryName: null };
+    const { service, calls } = setup({ extractTransactions: async () => Array.from({ length: 2001 }, () => transaction) });
+    await expect(service.previewImport(actor, { fileName: 'a.txt', bytes: csv('isi') })).rejects.toMatchObject({
+      code: 'IMPORT_TOO_MANY_ROWS'
+    });
+    expect(calls.categorize).toBe(0);
+  });
+
+  test('rejects users who are not members of the workspace', async () => {
+    const { service } = setup();
+    await expect(
+      service.previewImport({ ...actor, workspaceId: 'other' }, { fileName: 'a.csv', bytes: csv('Tanggal,Ket,Jumlah\n') })
+    ).rejects.toMatchObject({ code: 'NOT_A_MEMBER' });
+  });
+
   test('rejects unsupported file types', async () => {
     await expect(setup().service.previewImport(actor, { fileName: 'a.xls', bytes: csv('x') })).rejects.toMatchObject({ code: 'IMPORT_UNSUPPORTED_FILE' });
   });

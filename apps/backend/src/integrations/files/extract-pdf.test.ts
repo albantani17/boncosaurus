@@ -13,6 +13,13 @@ describe('extractPdf', () => {
     }
   });
 
+  test('rejects a pdf without text, such as a scan', async () => {
+    await expect(extractPdf(await readFixture('blank.pdf'))).rejects.toMatchObject({
+      status: 400,
+      code: 'IMPORT_NO_TEXT'
+    });
+  });
+
   test('rejects bytes that are not a pdf', async () => {
     await expect(extractPdf(new TextEncoder().encode('nope'))).rejects.toMatchObject({
       status: 400,

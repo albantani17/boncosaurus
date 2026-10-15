@@ -74,6 +74,15 @@ describe('buildImportRows', () => {
     expect(result.rows[0]!.issues).toEqual(['Account is archived']);
   });
 
+  test('rethrows errors that are not validation failures', () => {
+    const broken = Object.defineProperty(account(), 'isArchived', {
+      get: () => {
+        throw new TypeError('broken record');
+      }
+    });
+    expect(() => build({ accounts: [broken] })).toThrow('broken record');
+  });
+
   test('reports an issue for a non-positive amount', () => {
     expect(build({ raw: [raw({ amount: 0 })] }).rows[0]!.issues).toEqual(['Invalid amount']);
   });

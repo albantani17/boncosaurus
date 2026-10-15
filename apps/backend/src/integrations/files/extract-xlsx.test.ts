@@ -16,6 +16,14 @@ describe('extractXlsx', () => {
     });
   });
 
+  test('rejects a spreadsheet without rows', async () => {
+    await expect(extractXlsx(await readFixture('empty.xlsx'))).rejects.toMatchObject({
+      status: 400,
+      code: 'IMPORT_UNREADABLE',
+      message: 'The spreadsheet has no rows'
+    });
+  });
+
   test('rejects bytes that are not a spreadsheet', async () => {
     await expect(extractXlsx(new TextEncoder().encode('not a zip'))).rejects.toMatchObject({
       status: 400,

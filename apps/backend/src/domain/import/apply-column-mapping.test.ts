@@ -60,6 +60,32 @@ describe('applyColumnMapping', () => {
     ]);
   });
 
+  test('skips rows with both or neither debit and credit filled in', () => {
+    const mapping = { ...baseMapping, amountColumn: null, debitColumn: 2, creditColumn: 3 };
+    const { transactions, skippedRows } = applyColumnMapping(
+      [
+        ['Tgl', 'Ket', 'Debit', 'Kredit'],
+        ['05/03/2025', 'Dua-duanya', '30.000,00', '70.000,00'],
+        ['06/03/2025', 'Kosong', '', '']
+      ],
+      mapping,
+      0
+    );
+    expect(transactions).toEqual([]);
+    expect(skippedRows).toEqual([2, 3]);
+  });
+
+  test('skips rows whose type label is unknown', () => {
+    const mapping = { ...baseMapping, typeColumn: 3, incomeValues: ['pemasukan'], expenseValues: ['pengeluaran'] };
+    const { transactions, skippedRows } = applyColumnMapping(
+      [['a', 'b', 'c', 'd'], ['05/03/2025', 'Pindah', '1.000,00', 'Mutasi']],
+      mapping,
+      0
+    );
+    expect(transactions).toEqual([]);
+    expect(skippedRows).toEqual([2]);
+  });
+
   test('derives the type from a type column', () => {
     const mapping = { ...baseMapping, typeColumn: 3, incomeValues: ['pemasukan'], expenseValues: ['pengeluaran'] };
     const { transactions } = applyColumnMapping(

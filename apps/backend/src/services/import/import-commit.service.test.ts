@@ -79,4 +79,11 @@ describe('commitImport', () => {
     const { service } = setup();
     await expect(service.commitImport(actor, payload({ rows: [] }))).rejects.toMatchObject({ code: 'IMPORT_EMPTY' });
   });
+
+  test('rejects more than 2000 rows', async () => {
+    const { service, batches } = setup();
+    const rows = Array.from({ length: 2001 }, () => payload().rows[0]!);
+    await expect(service.commitImport(actor, payload({ rows }))).rejects.toMatchObject({ code: 'IMPORT_TOO_MANY_ROWS' });
+    expect(batches).toEqual([]);
+  });
 });
