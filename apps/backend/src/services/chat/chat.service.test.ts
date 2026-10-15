@@ -3,7 +3,7 @@ import { simulateReadableStream } from 'ai';
 import { MockLanguageModelV4 } from 'ai/test';
 import type { ChatRepository } from '../../repositories/chat.repository';
 import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '../../types/ai.types';
-import type { Transaction } from '../../types/finance.types';
+import type { Category, Transaction } from '../../types/finance.types';
 import { findProposal } from '../../domain/chat/proposal-parts';
 import type { AccountWithBalance } from '../account/account.service';
 import { createRecordingLogger } from '../../integrations/logging/create-recording-logger';
@@ -60,6 +60,19 @@ const account: AccountWithBalance = {
   balance: 0
 };
 
+const category: Category = {
+  id: 'cat-1',
+  workspaceId: 'ws',
+  parentId: null,
+  name: 'Jajan Kopi',
+  type: 'expense',
+  icon: null,
+  color: null,
+  isArchived: false,
+  createdAt: now,
+  updatedAt: now
+};
+
 const textStreamModel = (text: string) =>
   new MockLanguageModelV4({
     doStream: async () => ({
@@ -81,13 +94,31 @@ const textStreamModel = (text: string) =>
     })
   });
 
+const failingModel = (message: string) =>
+  new MockLanguageModelV4({
+    doStream: async () => {
+      throw new Error(message);
+    }
+  });
+
+const textMessage = (id: string, role: 'user' | 'assistant', text: string): ChatMessageRecord => ({
+  id,
+  workspaceId: 'ws',
+  conversationId: 'conv-1',
+  role,
+  parts: [{ type: 'text', text }],
+  createdAt: now
+});
+
 function setup({
   conversations = [makeConversation()],
   messages = [] as ChatMessageRecord[],
-  model = textStreamModel('Halo!')
+  model = textStreamModel('Halo!') as MockLanguageModelV4,
+  failAssistantSave = false
 } = {}) {
   const state = { conversations: [...conversations], messages: [...messages] };
   const created: CreateTransactionInput[] = [];
+  const recorder = createRecordingLogger();
   let nextId = 1;
 
   const chats: ChatRepository = {
@@ -113,6 +144,7 @@ function setup({
     findMessage: async (_ws, conversationId, id) =>
       state.messages.find((row) => row.conversationId === conversationId && row.id === id),
     saveMessage: async (values) => {
+      if (failAssistantSave && values.role === 'assistant') throw new Error('disk full');
       const index = state.messages.findIndex((row) => row.id === values.id);
       const row = { ...values, createdAt: now } as ChatMessageRecord;
       if (index < 0) state.messages.push(row);
@@ -134,7 +166,7 @@ function setup({
     tools: {
       reports: { getSummary: async (_ws, range) => ({ ...range, totals: [], byCategory: [] }) },
       accounts: { listAccounts: async () => [account] },
-      categories: { listCategories: async () => [] },
+      categories: { listCategories: async () => [category, { ...category, id: 'cat-old', name: 'Rokok', isArchived: true }] },
       transactions: { listTransactions: async () => [], previewTransaction: async () => {} }
     },
     transactions: {
@@ -147,10 +179,10 @@ function setup({
     createModel: () => model,
     generateId: () => `id-${nextId++}`,
     now: () => now,
-    logger: createRecordingLogger().logger
+    logger: recorder.logger
   });
 
-  return { service, state, created, model };
+  return { service, state, created, model, events: recorder.events };
 }
 
 const drain = async (response: Response) => {
@@ -190,7 +222,7 @@ describe('streamReply', () => {
     expect(state.conversations[0]).toMatchObject({ title: 'Pengeluaran bulan ini?', providerId: 'p-2' });
   });
 
-  test('sends instructions with the workspace accounts', async () => {
+  test('sends instructions with the active workspace accounts and categories', async () => {
     const { service, model } = setup();
 
     await drain(await service.streamReply(actor, 'conv-1', { message: { parts: [{ type: 'text', text: 'hai' }] } }));
@@ -198,6 +230,58 @@ describe('streamReply', () => {
     const [system] = model.doStreamCalls[0]!.prompt;
     expect(system).toMatchObject({ role: 'system' });
     expect(JSON.stringify(system)).toContain('Dompet Hijau');
+    expect(JSON.stringify(system)).toContain('Jajan Kopi');
+    expect(JSON.stringify(system)).not.toContain('Rokok');
+  });
+
+  test('sends the stored history before the new message', async () => {
+    const { service, model } = setup({
+      messages: [textMessage('m1', 'user', 'Saldo?'), textMessage('m2', 'assistant', 'Rp50.000')]
+    });
+
+    await drain(await service.streamReply(actor, 'conv-1', { message: { parts: [{ type: 'text', text: 'Makasih' }] } }));
+
+    const prompt = JSON.stringify(model.doStreamCalls[0]!.prompt);
+    expect(prompt).toContain('Saldo?');
+    expect(prompt).toContain('Rp50.000');
+    expect(prompt).toContain('Makasih');
+  });
+
+  test('drops a stored history that no longer validates and logs it', async () => {
+    const broken: ChatMessageRecord = {
+      ...textMessage('m1', 'assistant', ''),
+      parts: [{ type: 'tool-proposeTransaction', toolCallId: 'c1', state: 'output-available', input: { amount: 'lots' }, output: {} }]
+    };
+    const { service, model, events } = setup({ messages: [broken] });
+
+    await drain(await service.streamReply(actor, 'conv-1', { message: { parts: [{ type: 'text', text: 'hai' }] } }));
+
+    const prompt = model.doStreamCalls[0]!.prompt;
+    expect(prompt.filter((message) => message.role !== 'system')).toHaveLength(1);
+    expect(events()).toContain('chat.history_invalid');
+  });
+
+  test('streams a readable error and logs it when the model fails', async () => {
+    const { service, state, events } = setup({ model: failingModel('model offline') });
+
+    const body = await drain(
+      await service.streamReply(actor, 'conv-1', { message: { parts: [{ type: 'text', text: 'hai' }] } })
+    );
+
+    expect(body).toContain('"type":"error"');
+    expect(events()).toContain('chat.stream_failed');
+    expect(state.messages.map((row) => row.role)).toEqual(['user']);
+  });
+
+  test('logs a failure to save the assistant reply without breaking the stream', async () => {
+    const { service, events } = setup({ failAssistantSave: true });
+
+    const body = await drain(
+      await service.streamReply(actor, 'conv-1', { message: { parts: [{ type: 'text', text: 'hai' }] } })
+    );
+
+    expect(body).toContain('Halo!');
+    expect(events()).toContain('chat.save_failed');
   });
 
   test('rejects a message without text', async () => {
@@ -264,6 +348,37 @@ describe('dismissDraft', () => {
     expect(findProposal(state.messages[0]!.parts, 'call-1')).toEqual({ status: 'dismissed', draft });
     expect(created).toEqual([]);
   });
+
+  test('does nothing for a draft that is already dismissed', async () => {
+    const { service, state } = setup({ messages: [proposalMessage({ status: 'dismissed', draft })] });
+
+    await service.dismissDraft(actor, 'conv-1', { messageId: 'msg-a', toolCallId: 'call-1' });
+
+    expect(findProposal(state.messages[0]!.parts, 'call-1')).toEqual({ status: 'dismissed', draft });
+  });
+
+  test('refuses a draft that was already saved', async () => {
+    const { service } = setup({
+      messages: [proposalMessage({ status: 'saved', draft, transactionId: 'tx-9' })]
+    });
+    expect(
+      service.dismissDraft(actor, 'conv-1', { messageId: 'msg-a', toolCallId: 'call-1' })
+    ).rejects.toMatchObject({ status: 409, code: 'DRAFT_NOT_PENDING' });
+  });
+
+  test('still runs a queued request after the one holding the lock failed', async () => {
+    const { service } = setup({
+      messages: [proposalMessage({ status: 'saved', draft, transactionId: 'tx-9' })]
+    });
+    const reference = { messageId: 'msg-a', toolCallId: 'call-1' };
+
+    const results = await Promise.allSettled([
+      service.dismissDraft(actor, 'conv-1', reference),
+      service.dismissDraft(actor, 'conv-1', reference)
+    ]);
+
+    expect(results.map((result) => result.status)).toEqual(['rejected', 'rejected']);
+  });
 });
 
 describe('conversations', () => {
@@ -282,5 +397,37 @@ describe('conversations', () => {
     expect(conversation.messages).toEqual([
       { id: 'msg-a', role: 'assistant', parts: proposalMessage({ status: 'pending', draft }).parts, createdAt: now }
     ]);
+  });
+
+  test('creates a conversation for the caller', async () => {
+    const { service } = setup({ conversations: [] });
+
+    expect(await service.createConversation(actor, { providerId: 'p-2' })).toMatchObject({
+      workspaceId: 'ws',
+      userId: 'u1',
+      providerId: 'p-2'
+    });
+    expect(await service.createConversation(actor)).toMatchObject({ providerId: null });
+  });
+
+  test('renames a conversation with a trimmed title', async () => {
+    const { service } = setup();
+
+    expect(await service.renameConversation(actor, 'conv-1', '  Belanja  ')).toMatchObject({ title: 'Belanja' });
+  });
+
+  test('deletes a conversation', async () => {
+    const { service, state } = setup();
+
+    await service.deleteConversation(actor, 'conv-1');
+
+    expect(state.conversations).toEqual([]);
+  });
+
+  test("does not delete another user's conversation", async () => {
+    const { service, state } = setup({ conversations: [makeConversation({ userId: 'u2' })] });
+
+    expect(service.deleteConversation(actor, 'conv-1')).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    expect(state.conversations).toHaveLength(1);
   });
 });

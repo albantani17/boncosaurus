@@ -105,7 +105,39 @@ describe('getSummary', () => {
   });
 });
 
+describe('listAccounts', () => {
+  test('returns the accounts with their balance', async () => {
+    const { tools } = setup();
+
+    expect(await tools.listAccounts.execute!({}, options)).toEqual([
+      { id: 'acc-1', name: 'Cash', type: 'cash', currency: 'IDR', balance: 50_000, isArchived: false }
+    ]);
+  });
+});
+
+describe('listCategories', () => {
+  test('returns the categories', async () => {
+    const { tools } = setup();
+
+    expect(await tools.listCategories.execute!({}, options)).toEqual([
+      { id: 'cat-1', name: 'Makanan', type: 'expense', parentId: null, isArchived: false }
+    ]);
+  });
+});
+
 describe('searchTransactions', () => {
+  test.each([
+    [{ from: '2026-10-01' }, 'from'],
+    [{ to: '2026-10-31' }, 'to']
+  ])('returns an error for %p without an offset', async (input, field) => {
+    const { tools, calls } = setup();
+
+    const result = await tools.searchTransactions.execute!(input, options);
+
+    expect(result).toEqual({ error: expect.stringMatching(new RegExp(`^${field} must be`)) });
+    expect(calls.list).toEqual([]);
+  });
+
   test('resolves account and category names and defaults the limit', async () => {
     const { tools, calls } = setup();
 
@@ -177,6 +209,14 @@ describe('proposeTransaction', () => {
       code: 'CATEGORY_TYPE_MISMATCH',
       message: 'Category type does not match the transaction type'
     });
+  });
+
+  test('rethrows unexpected errors', async () => {
+    const { tools } = setup(async () => {
+      throw new Error('database down');
+    });
+
+    expect(tools.proposeTransaction.execute!(input, options)).rejects.toThrow('database down');
   });
 
   test('rejects a date without an offset before validating', async () => {
