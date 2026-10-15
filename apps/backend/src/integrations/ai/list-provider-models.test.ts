@@ -63,6 +63,27 @@ describe('listProviderModels', () => {
     );
   });
 
+  test('reads an error given as a plain string', async () => {
+    const { fetcher } = respond({ error: 'Invalid token' }, 401);
+    expect(listProviderModels({ kind: 'openai', baseUrl: null, apiKey: 'bad' }, fetcher)).rejects.toThrow(
+      'Invalid token'
+    );
+  });
+
+  test('falls back to the status code when the error body is not JSON', async () => {
+    const fetcher = async () => new Response('Bad Gateway', { status: 502 });
+    expect(listProviderModels({ kind: 'anthropic', baseUrl: null, apiKey: 'k' }, fetcher)).rejects.toThrow(
+      'status 502'
+    );
+  });
+
+  test('requires a base URL for an OpenAI-compatible provider', async () => {
+    const { fetcher } = respond({ data: [] });
+    expect(listProviderModels({ kind: 'openai_compatible', baseUrl: null, apiKey: null }, fetcher)).rejects.toThrow(
+      'needs a base URL'
+    );
+  });
+
   test('falls back to the status code when the error has no message', async () => {
     const { fetcher } = respond(null, 404);
     expect(

@@ -61,8 +61,12 @@ const setup = (
   const { accounts = [makeAccount()], categories = [], existing, softDeleteResult = true } = options;
   const inserted: unknown[] = [];
   const updates: unknown[] = [];
+  const listCalls: unknown[] = [];
   const transactions: TransactionRepository = {
-    list: async () => [],
+    list: async (workspaceId, filters) => {
+      listCalls.push({ workspaceId, filters });
+      return existing ? [existing] : [];
+    },
     findById: async () => existing,
     insert: async (values) => {
       inserted.push(values);
@@ -79,7 +83,7 @@ const setup = (
     accounts: { findById: async (_ws, id) => accounts.find((account) => account.id === id) },
     categories: { findById: async (_ws, id) => categories.find((category) => category.id === id) }
   });
-  return { service, inserted, updates };
+  return { service, inserted, updates, listCalls };
 };
 
 const expenseInput = {
@@ -88,6 +92,32 @@ const expenseInput = {
   amount: 1000,
   occurredAt: now
 };
+
+describe('listTransactions', () => {
+  test('passes the workspace and filters to the repository', async () => {
+    const existing = makeTransaction();
+    const { service, listCalls } = setup({ existing });
+    const filters = { limit: 10, offset: 0 };
+
+    expect(await service.listTransactions('ws', filters)).toEqual([existing]);
+    expect(listCalls).toEqual([{ workspaceId: 'ws', filters }]);
+  });
+});
+
+describe('getTransaction', () => {
+  test('returns an existing transaction', async () => {
+    const existing = makeTransaction();
+    const { service } = setup({ existing });
+
+    expect(await service.getTransaction('ws', 'tx-1')).toBe(existing);
+  });
+
+  test('throws not found when the transaction does not exist', async () => {
+    const { service } = setup();
+
+    await expect(service.getTransaction('ws', 'x')).rejects.toMatchObject({ status: 404 });
+  });
+});
 
 describe('previewTransaction', () => {
   test('validates a draft without inserting it', async () => {

@@ -79,7 +79,7 @@ function setup({
     fetchModels,
     logger: recorder.logger
   });
-  return { service, rows: fake.rows, events: recorder.events };
+  return { service, repository: fake.repository, rows: fake.rows, events: recorder.events };
 }
 
 describe('listProviders', () => {
@@ -158,6 +158,16 @@ describe('createProvider', () => {
     expect(
       service.createProvider(actor, { name: 'Claude', kind: 'anthropic', model: 'x' })
     ).rejects.toMatchObject({ status: 409, code: 'AI_PROVIDER_NAME_TAKEN' });
+  });
+
+  test('rethrows write errors that are not name conflicts', async () => {
+    const { service, repository } = setup();
+    repository.insert = async () => {
+      throw new Error('connection lost');
+    };
+    expect(
+      service.createProvider(actor, { name: 'Claude', kind: 'anthropic', model: 'x' })
+    ).rejects.toThrow('connection lost');
   });
 
   test('rejects members who are not owners or admins', async () => {

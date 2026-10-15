@@ -98,6 +98,45 @@ describe('createCategory', () => {
       createCategoryService(repository).createCategory('ws', { name: 'X', type: 'expense' })
     ).rejects.toMatchObject({ status: 409, code: 'CATEGORY_NAME_TAKEN' });
   });
+
+  test('rethrows write errors that are not name conflicts', async () => {
+    const { repository } = createFakeRepository({
+      insert: async () => {
+        throw new Error('connection lost');
+      }
+    });
+
+    await expect(
+      createCategoryService(repository).createCategory('ws', { name: 'X', type: 'expense' })
+    ).rejects.toThrow('connection lost');
+  });
+});
+
+describe('listCategories', () => {
+  test('returns the categories of the workspace', async () => {
+    const categories = [makeCategory()];
+    const { repository } = createFakeRepository({
+      list: async (workspaceId) => (workspaceId === 'ws' ? categories : [])
+    });
+
+    expect(await createCategoryService(repository).listCategories('ws')).toEqual(categories);
+  });
+});
+
+describe('getCategory', () => {
+  test('returns an existing category', async () => {
+    const { repository } = createFakeRepository({ findById: async () => makeCategory() });
+
+    expect(await createCategoryService(repository).getCategory('ws', 'cat-1')).toMatchObject({ id: 'cat-1' });
+  });
+
+  test('throws not found when the category does not exist', async () => {
+    const { repository } = createFakeRepository();
+
+    await expect(createCategoryService(repository).getCategory('ws', 'x')).rejects.toMatchObject({
+      status: 404
+    });
+  });
 });
 
 describe('updateCategory', () => {

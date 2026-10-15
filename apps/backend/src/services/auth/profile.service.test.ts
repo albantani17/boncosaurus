@@ -102,6 +102,12 @@ describe('updateProfile', () => {
     ).rejects.toMatchObject({ status: 409, code: 'EMAIL_TAKEN' });
   });
 
+  test('rethrows write errors that are not email conflicts', async () => {
+    const { service } = setup({ updateError: new Error('connection lost') });
+
+    await expect(service.updateProfile('user-1', { name: 'X' })).rejects.toThrow('connection lost');
+  });
+
   test('throws not found for an unknown user', async () => {
     const { service } = setup();
 
