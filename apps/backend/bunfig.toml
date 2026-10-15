@@ -1,0 +1,5 @@
+[test]
+coverageThreshold = { lines = 1.0, functions = 1.0 }
+
+# packages/shared is measured by its own tests.
+coveragePathIgnorePatterns = ["../../packages/**"]

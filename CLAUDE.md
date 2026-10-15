@@ -31,7 +31,10 @@ cd apps/backend && bunx tsc --noEmit                         # typecheck backend
 cd apps/frontend && bun test                                 # frontend unit tests (pure utils/services)
 cd apps/frontend && bun run check                            # svelte-check
 cd packages/shared && bun test && bunx tsc --noEmit          # shared contract
+bun test --coverage                                          # in any package; fails below 100% lines/functions
 ```
+
+Each package's `bunfig.toml` sets a 100% line/function `coverageThreshold`. Bun only measures files a test imports, so repositories, routes, plugins and Svelte components are not counted. The apps ignore `packages/shared` in their coverage because shared has its own tests.
 
 There is no linter or formatter configured. Backend and shared code use 2-space indentation and single quotes; the frontend uses tabs.
 
