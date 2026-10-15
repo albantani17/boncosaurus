@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { Transaction } from '../../../types/api.types';
+import type { Account, Category, Transaction } from '../../../types/api.types';
 import { TRANSACTIONS_PAGE_SIZE, loadTransactionPage } from './transaction-list.service';
 
 const filters = { type: '' as const, accountId: '', categoryId: '', month: '2026-10' };
@@ -16,7 +16,7 @@ const transaction = (id: number): Transaction => ({
 	note: null
 });
 
-const setup = (transactionCount: number) => {
+const setup = (transactionCount: number, lists: { accounts?: Account[]; categories?: Category[] } = {}) => {
 	const paths: string[] = [];
 	const client = {
 		get: async <T>(path: string) => {
@@ -24,7 +24,8 @@ const setup = (transactionCount: number) => {
 			if (path.startsWith('/transactions')) {
 				return Array.from({ length: transactionCount }, (_, index) => transaction(index)) as T;
 			}
-			return [] as T;
+			if (path === '/accounts') return (lists.accounts ?? []) as T;
+			return (lists.categories ?? []) as T;
 		}
 	};
 	return { client, paths };
@@ -57,5 +58,25 @@ describe('loadTransactionPage', () => {
 
 		expect(page.rows).toHaveLength(3);
 		expect(page.hasMore).toBe(false);
+	});
+
+	test('names each row after its account and returns the lists for the filters', async () => {
+		const account: Account = {
+			id: 'a',
+			name: 'Dompet',
+			type: 'cash',
+			currency: 'USD',
+			initialBalance: 0,
+			isArchived: false,
+			balance: 0
+		};
+		const category: Category = { id: 'c', name: 'Makan', type: 'expense', parentId: null, isArchived: false };
+		const { client } = setup(1, { accounts: [account], categories: [category] });
+
+		const page = await loadTransactionPage(client, filters, 0);
+
+		expect(page.rows[0]).toMatchObject({ accountName: 'Dompet', currency: 'USD' });
+		expect(page.accounts).toEqual([account]);
+		expect(page.categories).toEqual([category]);
 	});
 });

@@ -47,6 +47,21 @@ describe('createBackendClient errors', () => {
 	});
 });
 
+describe('createBackendClient.get', () => {
+	test('sends a GET with the workspace header and returns the parsed JSON body', async () => {
+		const calls: RequestInit[] = [];
+		const fetch = (async (_url: string, init: RequestInit) => {
+			calls.push(init);
+			return new Response('[{"id":"1"}]');
+		}) as unknown as typeof globalThis.fetch;
+		const client = createBackendClient({ fetch, baseUrl: 'http://api', workspaceId: 'w1' });
+
+		expect(await client.get<Array<{ id: string }>>('/x')).toEqual([{ id: '1' }]);
+		expect(calls[0]!.method).toBe('GET');
+		expect((calls[0]!.headers as Record<string, string>)['x-workspace-id']).toBe('w1');
+	});
+});
+
 describe('createBackendClient.send', () => {
 	test('returns the parsed JSON body', async () => {
 		const fetch = (async () => new Response('{"id":"1"}')) as unknown as typeof globalThis.fetch;

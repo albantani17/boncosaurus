@@ -36,6 +36,22 @@ describe('fetchProviderModels', () => {
 		});
 	});
 
+	test('returns a fallback message when the response is not JSON', async () => {
+		const fetcher = (async () => new Response('Bad Gateway', { status: 502 })) as unknown as typeof fetch;
+		expect(await fetchProviderModels({ kind: 'openai', baseUrl: '', apiKey: 'k' }, fetcher)).toEqual({
+			ok: false,
+			message: 'Gagal mengambil daftar model. Coba lagi.'
+		});
+	});
+
+	test('drops entries that are not model names', async () => {
+		const { fetcher } = fakeFetch({ models: ['qwen3', 42, null] });
+		expect(await fetchProviderModels({ kind: 'openai', baseUrl: '', apiKey: 'k' }, fetcher)).toEqual({
+			ok: true,
+			models: ['qwen3']
+		});
+	});
+
 	test('returns a fallback message when the request throws', async () => {
 		const fetcher = (async () => {
 			throw new Error('offline');
