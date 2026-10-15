@@ -1,4 +1,4 @@
-import type { ZonedNow } from './describe-zoned-now';
+import type { ZonedNow } from '../describe-zoned-now';
 
 export type PromptAccount = { id: string; name: string; type: string; currency: string };
 export type PromptCategory = { id: string; name: string; type: string; parentId: string | null };

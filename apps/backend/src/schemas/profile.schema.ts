@@ -1,5 +1,5 @@
 import { t } from 'elysia';
-import { MIN_PASSWORD_LENGTH } from '../utils/password';
+import { MIN_PASSWORD_LENGTH } from '../utils/auth/password';
 
 const password = t.String({ minLength: 1, maxLength: 256 });
 

@@ -1,4 +1,4 @@
-import type { ColumnMapping, ImportTransactionType, MappedRows, RawTransaction } from '../types/import.types';
+import type { ColumnMapping, ImportTransactionType, MappedRows, RawTransaction } from '../../types/import.types';
 import { parseAmount } from './parse-amount';
 import { parseDateWithFormat } from './parse-date-with-format';
 

@@ -1,5 +1,5 @@
-import { BadRequestError } from '../errors/app-error';
-import type { ExtractedContent } from '../types/import.types';
+import { BadRequestError } from '../../errors/app-error';
+import type { ExtractedContent } from '../../types/import.types';
 
 export function extractText(bytes: Uint8Array): ExtractedContent {
   const text = new TextDecoder('utf-8').decode(bytes).replace(/^﻿/, '');

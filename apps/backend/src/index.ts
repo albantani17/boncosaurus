@@ -7,8 +7,8 @@ import { errorHandlerPlugin } from './plugins/error-handler.plugin';
 import { apiRoutes } from './routes';
 import { bootstrapRepository } from './repositories/bootstrap.repository';
 import { bootstrapFirstRun } from './services/bootstrap.service';
-import { parseBootstrapConfig } from './utils/parse-bootstrap-config';
-import { hashPassword } from './utils/password';
+import { parseBootstrapConfig } from './utils/auth/parse-bootstrap-config';
+import { hashPassword } from './utils/auth/password';
 
 const BOOTSTRAP_MESSAGES = {
   created: 'First-run: created admin, default workspace and categories',

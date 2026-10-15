@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { TransactionProposal } from '../types/ai.types';
+import type { TransactionProposal } from '../../types/ai.types';
 import { findProposal, replaceProposal } from './proposal-parts';
 
 const draft = {

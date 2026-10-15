@@ -1,6 +1,6 @@
 import { extractText, getDocumentProxy } from 'unpdf';
-import { BadRequestError } from '../errors/app-error';
-import type { ExtractedContent } from '../types/import.types';
+import { BadRequestError } from '../../errors/app-error';
+import type { ExtractedContent } from '../../types/import.types';
 
 export async function extractPdf(bytes: Uint8Array): Promise<ExtractedContent> {
   const text = await readPdfText(bytes);

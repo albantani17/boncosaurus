@@ -1,7 +1,7 @@
 import { type LanguageModel, Output, generateText } from 'ai';
 import { z } from 'zod';
 import type { ColumnMapping, ImportTransactionType, RawTransaction } from '../types/import.types';
-import type { LanguageModelSettings } from '../utils/create-language-model';
+import type { LanguageModelSettings } from '../utils/ai/create-language-model';
 
 export type ImportAiCall = { settings: LanguageModelSettings; instructions: string };
 export type CategorySuggestion = { description: string; type: ImportTransactionType; categoryName: string | null };

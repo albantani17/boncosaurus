@@ -1,4 +1,4 @@
-import type { TransactionProposal } from '../types/ai.types';
+import type { TransactionProposal } from '../../types/ai.types';
 
 const PROPOSAL_PART_TYPE = 'tool-proposeTransaction';
 

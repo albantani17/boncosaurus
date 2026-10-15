@@ -4,8 +4,8 @@ import type { CategoryRepository } from '../repositories/category.repository';
 import type { ImportRepository } from '../repositories/import.repository';
 import type { Account, Category, NewAccount, NewCategory, NewTransaction } from '../types/finance.types';
 import type { ImportCommitPayload, ImportCommitResult } from '../types/import.types';
-import { findByName, normalizeName } from '../utils/match-by-name';
-import { validateTransaction } from '../utils/validate-transaction';
+import { findByName, normalizeName } from '../utils/import/match-by-name';
+import { validateTransaction } from '../utils/transaction/validate-transaction';
 import type { ActorContext } from './ai-provider.service';
 
 type Dependencies = {

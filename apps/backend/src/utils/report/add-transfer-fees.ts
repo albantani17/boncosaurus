@@ -1,4 +1,4 @@
-import type { CategoryTotalRow, TotalsRow } from '../types/report.types';
+import type { CategoryTotalRow, TotalsRow } from '../../types/report.types';
 
 export type TransferFeeRow = { currency: string; total: number };
 

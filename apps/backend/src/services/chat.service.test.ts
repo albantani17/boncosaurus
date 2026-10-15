@@ -4,7 +4,7 @@ import { MockLanguageModelV4 } from 'ai/test';
 import type { ChatRepository } from '../repositories/chat.repository';
 import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '../types/ai.types';
 import type { Transaction } from '../types/finance.types';
-import { findProposal } from '../utils/proposal-parts';
+import { findProposal } from '../utils/chat/proposal-parts';
 import type { AccountWithBalance } from './account.service';
 import { createChatService } from './chat.service';
 import type { CreateTransactionInput } from './transaction.service';

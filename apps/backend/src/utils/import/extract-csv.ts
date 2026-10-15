@@ -1,6 +1,6 @@
 import Papa from 'papaparse';
-import { BadRequestError } from '../errors/app-error';
-import type { ExtractedContent } from '../types/import.types';
+import { BadRequestError } from '../../errors/app-error';
+import type { ExtractedContent } from '../../types/import.types';
 
 export async function extractCsv(bytes: Uint8Array): Promise<ExtractedContent> {
   const text = new TextDecoder('utf-8').decode(bytes).replace(/^﻿/, '');

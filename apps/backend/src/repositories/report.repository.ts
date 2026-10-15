@@ -2,7 +2,7 @@ import { and, eq, gte, isNotNull, isNull, lte, ne, sql } from 'drizzle-orm';
 import { db } from '../db';
 import { accounts, transactions } from '../db/schema';
 import type { CategoryTotalRow, DateRange, TotalsRow } from '../types/report.types';
-import type { TransferFeeRow } from '../utils/add-transfer-fees';
+import type { TransferFeeRow } from '../utils/report/add-transfer-fees';
 
 export type ReportRepository = {
   sumByCurrencyAndType(workspaceId: string, range: DateRange): Promise<TotalsRow[]>;

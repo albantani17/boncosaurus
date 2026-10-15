@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { Account, Category } from '../types/finance.types';
-import type { RawTransaction } from '../types/import.types';
+import type { Account, Category } from '../../types/finance.types';
+import type { RawTransaction } from '../../types/import.types';
 import { type BuildImportRowsInput, buildImportRows } from './build-import-rows';
 
 const account = (overrides: Partial<Account> = {}) =>

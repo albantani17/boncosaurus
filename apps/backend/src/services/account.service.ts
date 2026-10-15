@@ -1,7 +1,7 @@
 import { ConflictError, NotFoundError } from '../errors/app-error';
 import type { AccountRepository } from '../repositories/account.repository';
 import type { Account, AccountPatch, NewAccount } from '../types/finance.types';
-import { calculateAccountBalance } from '../utils/calculate-account-balance';
+import { calculateAccountBalance } from '../utils/transaction/calculate-account-balance';
 import { isUniqueViolation } from '../utils/is-unique-violation';
 
 export type CreateAccountInput = Pick<NewAccount, 'name' | 'type' | 'currency'> &

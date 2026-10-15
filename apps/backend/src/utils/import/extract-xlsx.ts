@@ -1,6 +1,6 @@
 import { readSheet } from 'read-excel-file/universal';
-import { BadRequestError } from '../errors/app-error';
-import type { ExtractedContent } from '../types/import.types';
+import { BadRequestError } from '../../errors/app-error';
+import type { ExtractedContent } from '../../types/import.types';
 
 export async function extractXlsx(bytes: Uint8Array): Promise<ExtractedContent> {
   const rows = await readSheetRows(bytes);

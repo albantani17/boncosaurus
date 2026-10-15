@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { Account, Category } from '../types/finance.types';
+import type { Account, Category } from '../../types/finance.types';
 import { type TransactionDraft, validateTransaction } from './validate-transaction';
 
 const now = new Date();

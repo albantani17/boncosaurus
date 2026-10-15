@@ -1,4 +1,4 @@
-import type { IncomingTransferTotal, OutgoingTotals } from '../types/finance.types';
+import type { IncomingTransferTotal, OutgoingTotals } from '../../types/finance.types';
 
 export function calculateAccountBalance(
   initialBalance: number,

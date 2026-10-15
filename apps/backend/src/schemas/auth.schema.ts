@@ -1,5 +1,5 @@
 import { t } from 'elysia';
-import { REFRESH_COOKIE_NAME } from '../utils/build-refresh-cookie';
+import { REFRESH_COOKIE_NAME } from '../utils/auth/build-refresh-cookie';
 
 export const loginBody = t.Object({
   email: t.String({ minLength: 3, maxLength: 254 }),

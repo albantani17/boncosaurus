@@ -1,4 +1,4 @@
-import type { CurrencyTotals, TotalsRow } from '../types/report.types';
+import type { CurrencyTotals, TotalsRow } from '../../types/report.types';
 
 export function buildCurrencyTotals(rows: TotalsRow[]): CurrencyTotals[] {
   const totalsByCurrency = new Map<string, CurrencyTotals>();

@@ -3,7 +3,7 @@ import { authConfig, authService } from '../container';
 import { UnauthorizedError } from '../errors/app-error';
 import { authPlugin } from '../plugins/auth.plugin';
 import { loginBody, refreshCookie } from '../schemas/auth.schema';
-import { REFRESH_COOKIE_NAME, buildRefreshCookie } from '../utils/build-refresh-cookie';
+import { REFRESH_COOKIE_NAME, buildRefreshCookie } from '../utils/auth/build-refresh-cookie';
 
 export const authRoutes = new Elysia({ prefix: '/auth' })
   .post(

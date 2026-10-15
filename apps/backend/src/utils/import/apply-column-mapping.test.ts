@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { ColumnMapping } from '../types/import.types';
+import type { ColumnMapping } from '../../types/import.types';
 import { applyColumnMapping } from './apply-column-mapping';
 
 const baseMapping: ColumnMapping = {

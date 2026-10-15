@@ -1,4 +1,4 @@
-import type { BootstrapConfig } from '../types/bootstrap.types';
+import type { BootstrapConfig } from '../../types/bootstrap.types';
 import { MIN_PASSWORD_LENGTH } from './password';
 
 type Env = Record<string, string | undefined>;

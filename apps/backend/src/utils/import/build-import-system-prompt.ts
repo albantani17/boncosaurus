@@ -1,4 +1,4 @@
-import type { ZonedNow } from './describe-zoned-now';
+import type { ZonedNow } from '../describe-zoned-now';
 
 export type ImportTask = 'mapping' | 'extract' | 'categorize';
 

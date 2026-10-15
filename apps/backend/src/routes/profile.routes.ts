@@ -3,7 +3,7 @@ import { authConfig, authService, profileService } from '../container';
 import { authPlugin } from '../plugins/auth.plugin';
 import { changePasswordBody, updateProfileBody } from '../schemas/profile.schema';
 import { refreshCookie } from '../schemas/auth.schema';
-import { REFRESH_COOKIE_NAME, buildRefreshCookie } from '../utils/build-refresh-cookie';
+import { REFRESH_COOKIE_NAME, buildRefreshCookie } from '../utils/auth/build-refresh-cookie';
 
 export const profileRoutes = new Elysia({ prefix: '/auth/me' })
   .use(authPlugin)

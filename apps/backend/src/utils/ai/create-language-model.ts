@@ -3,7 +3,7 @@ import { createGoogle } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import type { LanguageModel } from 'ai';
-import type { AiProviderKind } from '../types/ai.types';
+import type { AiProviderKind } from '../../types/ai.types';
 
 export type LanguageModelSettings = {
   kind: AiProviderKind;

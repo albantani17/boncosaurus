@@ -1,9 +1,9 @@
-import { AppError } from '../errors/app-error';
-import type { ImportAccountDraft, ImportCategoryDraft, ImportRowDraft, RawTransaction } from '../types/import.types';
-import type { Account, Category, Transaction } from '../types/finance.types';
+import { AppError } from '../../errors/app-error';
+import type { ImportAccountDraft, ImportCategoryDraft, ImportRowDraft, RawTransaction } from '../../types/import.types';
+import type { Account, Category, Transaction } from '../../types/finance.types';
 import { detectDuplicates } from './detect-duplicates';
 import { findByName, normalizeName } from './match-by-name';
-import { validateTransaction } from './validate-transaction';
+import { validateTransaction } from '../transaction/validate-transaction';
 
 export type BuildImportRowsInput = {
   raw: RawTransaction[];

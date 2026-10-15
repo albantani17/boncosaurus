@@ -1,6 +1,6 @@
 import { accessTokenService } from '../container';
 import { UnauthorizedError } from '../errors/app-error';
-import { parseBearerToken } from '../utils/parse-bearer-token';
+import { parseBearerToken } from '../utils/auth/parse-bearer-token';
 
 export async function authenticateRequest(authorizationHeader: string | undefined): Promise<string> {
   const token = parseBearerToken(authorizationHeader);

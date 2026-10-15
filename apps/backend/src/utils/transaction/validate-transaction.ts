@@ -1,5 +1,5 @@
-import { BadRequestError } from '../errors/app-error';
-import type { Account, Category, Transaction } from '../types/finance.types';
+import { BadRequestError } from '../../errors/app-error';
+import type { Account, Category, Transaction } from '../../types/finance.types';
 
 export type TransactionDraft = Pick<
   Transaction,
