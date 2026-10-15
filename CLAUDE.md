@@ -64,6 +64,13 @@ Every request goes through these layers: `routes/` → `services/` → `reposito
 
 `plugins/error-handler.plugin.ts` turns any `AppError` into an `ApiErrorBody` (`{ error: { code, message } }`) with the error's status. Elysia validation failures become HTTP 422 with code `VALIDATION_ERROR`. Tests assert on `status`/`code`, so keep error codes stable.
 
+### Logging
+
+- `pino`, created once in `container.ts` (`logger`) from `config/parse-log-config.ts`: `LOG_LEVEL` (default `info`) and `LOG_FORMAT` (`pretty` via a synchronous `pino-pretty` stream, or `json`; defaults to `json` when `NODE_ENV=production`). `integrations/logging/create-logger.ts` redacts passwords, API keys, refresh tokens and `authorization`/`cookie` headers.
+- `plugins/request-logger.plugin.ts` writes one access log line per request (`requestId`, method, path, status, `durationMs`, `userId`/`workspaceId` when resolved; `/health` is skipped) and echoes `X-Request-Id` (a safe incoming id is kept, otherwise a UUIDv7). The id lives in a `WeakMap<Request, …>` (`plugins/request-context.ts`) so `onError` can read it too.
+- Errors that are not `AppError`/validation/Elysia 4xx are logged with their stack by the error handler and answered with a generic 500 `INTERNAL_ERROR`.
+- Services that log take `logger: ServiceLogger` (`types/logger.types.ts`) through their deps and log with an `event` field (`auth.login_failed`, `auth.refresh_reused`, `chat.stream_failed`, `import.ai_failed`, `ai.probe_failed`, …). Tests pass `createRecordingLogger()` (`integrations/logging/`) and assert on `events()`. `db/migrate.ts` still uses `console.log` because it must not load the container.
+
 ### Auth and multi-tenancy
 
 - Login returns a short-lived JWT access token (HS256 via `jose`) in the response body. The refresh token is set as an httpOnly cookie (see `utils/build-refresh-cookie.ts`). CORS uses `credentials: true` with `FRONTEND_ORIGIN`.
