@@ -60,7 +60,7 @@ Every request goes through these layers: `routes/` → `services/` → `reposito
 
 ### Reports
 
-`GET /reports/summary?from&to` returns income/expense totals per currency plus per-category totals for the range. Transfers are excluded and currencies are never mixed (currency comes from the transaction's account).
+`GET /reports/summary?from&to` returns income/expense totals per currency plus per-category totals for the range. Transfers are excluded and currencies are never mixed (currency comes from the transaction's account). The one exception is a transfer's optional `fee` (admin fee, transfers only, in the source account currency): it reduces the source balance (`amount + fee`) and is counted as an uncategorized expense (`utils/add-transfer-fees.ts`).
 
 ### AI chat
 

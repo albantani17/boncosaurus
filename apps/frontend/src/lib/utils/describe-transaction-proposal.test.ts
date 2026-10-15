@@ -47,4 +47,10 @@ describe('describeTransactionProposal', () => {
 			category: 'Tidak ditemukan'
 		});
 	});
+
+	test('formats the admin fee of a transfer in the source currency', () => {
+		const transfer = { ...draft, type: 'transfer' as const, categoryId: null, toAccountId: 'acc-2', fee: 2500 };
+		expect(describeTransactionProposal(transfer, accounts, categories).fee).toBe('Rp2.500');
+		expect(describeTransactionProposal(draft, accounts, categories).fee).toBeNull();
+	});
 });

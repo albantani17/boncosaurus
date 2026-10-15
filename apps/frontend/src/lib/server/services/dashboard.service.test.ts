@@ -22,6 +22,7 @@ const transaction: Transaction = {
 	categoryId: 'cat-1',
 	amount: 25_000,
 	toAmount: null,
+	fee: null,
 	occurredAt: new Date(2026, 9, 13, 8).toISOString(),
 	note: 'sarapan'
 };

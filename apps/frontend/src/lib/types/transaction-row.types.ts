@@ -5,6 +5,7 @@ export type TransactionRowData = {
 	type: TransactionType;
 	amount: number;
 	toAmount: number | null;
+	fee: number | null;
 	currency: string;
 	toCurrency: string | null;
 	accountId: string;

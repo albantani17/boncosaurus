@@ -8,6 +8,7 @@ const row = (id: string, occurredAt: Date): TransactionRowData => ({
 	type: 'expense',
 	amount: 1,
 	toAmount: null,
+	fee: null,
 	currency: 'IDR',
 	toCurrency: null,
 	accountId: 'a',

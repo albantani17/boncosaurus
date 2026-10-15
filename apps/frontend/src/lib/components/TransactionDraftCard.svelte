@@ -61,6 +61,10 @@
 					{summary.toAccount}{#if summary.toAmount}<span class="text-sage-300"> · diterima {summary.toAmount}</span>{/if}
 				</dd>
 			{/if}
+			{#if summary.fee}
+				<dt class="text-sage-400">Biaya admin</dt>
+				<dd class="text-beige-100">{summary.fee}</dd>
+			{/if}
 			{#if summary.category}
 				<dt class="text-sage-400">Kategori</dt>
 				<dd class="text-beige-100">{summary.category}</dd>

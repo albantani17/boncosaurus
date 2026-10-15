@@ -26,6 +26,7 @@ const transaction = (overrides: Partial<Transaction>): Transaction => ({
 	categoryId: 'c',
 	amount: 100,
 	toAmount: null,
+	fee: null,
 	occurredAt: '2026-10-14T01:00:00.000Z',
 	note: null,
 	...overrides

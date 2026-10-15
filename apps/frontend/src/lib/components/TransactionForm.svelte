@@ -28,6 +28,7 @@
 	let categoryId = $state(initial?.categoryId ?? '');
 	let amount = $state(initial ? String(initial.amount) : '');
 	let toAmount = $state(initial?.toAmount ? String(initial.toAmount) : '');
+	let fee = $state(initial?.fee ? String(initial.fee) : '');
 	let occurredAt = $state(
 		toDatetimeInputValue(initial ? new Date(initial.occurredAt) : new Date(), new Date().getTimezoneOffset())
 	);
@@ -115,6 +116,7 @@
 		{#if needsReceivedAmount && toCurrency}
 			<AmountField label="Jumlah diterima" name="toAmount" bind:value={toAmount} currency={toCurrency} />
 		{/if}
+		<AmountField label="Biaya admin" name="fee" bind:value={fee} currency={fromCurrency} required={false} />
 	{:else}
 		<SelectField
 			label="Kategori"

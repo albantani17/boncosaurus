@@ -7,6 +7,7 @@ const row = (overrides: Partial<TransactionRowData>): TransactionRowData => ({
 	type: 'expense',
 	amount: 1,
 	toAmount: null,
+	fee: null,
 	currency: 'IDR',
 	toCurrency: null,
 	accountId: 'a',
@@ -35,5 +36,10 @@ describe('describeTransactionMeta', () => {
 
 	test('shows source and destination for a transfer', () => {
 		expect(describeTransactionMeta(row({ type: 'transfer', toAccountName: 'Dompet' }))).toBe('BCA → Dompet · 08.30');
+	});
+
+	test('shows the admin fee of a transfer', () => {
+		const transfer = row({ type: 'transfer', toAccountId: 'b', toAccountName: 'Dana', fee: 2500 });
+		expect(describeTransactionMeta(transfer)).toBe('BCA → Dana · biaya Rp2.500 · 08.30');
 	});
 });

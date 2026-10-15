@@ -5,6 +5,7 @@ import { formatCurrency } from './format-currency';
 export type ProposalSummary = {
 	amount: string;
 	toAmount: string | null;
+	fee: string | null;
 	account: string;
 	toAccount: string | null;
 	category: string | null;
@@ -29,6 +30,7 @@ export function describeTransactionProposal(
 	return {
 		amount: formatCurrency(draft.amount, currency),
 		toAmount: draft.toAmount === null ? null : formatCurrency(draft.toAmount, toAccount?.currency),
+		fee: draft.fee ? formatCurrency(draft.fee, currency) : null,
 		account: account?.name ?? UNKNOWN,
 		toAccount: draft.toAccountId ? (toAccount?.name ?? UNKNOWN) : null,
 		category: draft.categoryId ? (category ? [parent?.name, category.name].filter(Boolean).join(' › ') : UNKNOWN) : null,

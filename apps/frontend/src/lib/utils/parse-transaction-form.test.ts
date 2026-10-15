@@ -26,6 +26,7 @@ describe('parseTransactionForm', () => {
 				categoryId: 'cat-1',
 				amount: 25000,
 				toAmount: null,
+				fee: null,
 				occurredAt: '2026-10-14T01:30:00.000Z',
 				note: 'Sarapan'
 			}
@@ -100,5 +101,24 @@ describe('parseTransactionForm', () => {
 
 	test('rejects a note longer than 500 characters', () => {
 		expect(parseTransactionForm(formWith({ note: 'x'.repeat(501) }), 0)).toMatchObject({ ok: false });
+	});
+
+	test('keeps the admin fee of a transfer', () => {
+		const transfer = { type: 'transfer', toAccountId: 'acc-2', fee: '2.500' };
+		expect(parseTransactionForm(formWith(transfer), 0)).toMatchObject({ ok: true, value: { fee: 2500 } });
+	});
+
+	test('treats an empty fee as no fee', () => {
+		const transfer = { type: 'transfer', toAccountId: 'acc-2', fee: '' };
+		expect(parseTransactionForm(formWith(transfer), 0)).toMatchObject({ ok: true, value: { fee: null } });
+	});
+
+	test('rejects an invalid fee', () => {
+		const transfer = { type: 'transfer', toAccountId: 'acc-2', fee: 'abc' };
+		expect(parseTransactionForm(formWith(transfer), 0)).toEqual({ ok: false, message: 'Biaya admin harus angka bulat lebih dari 0.' });
+	});
+
+	test('ignores a fee on non-transfers', () => {
+		expect(parseTransactionForm(formWith({ fee: '2500' }), 0)).toMatchObject({ ok: true, value: { fee: null } });
 	});
 });

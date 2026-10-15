@@ -11,6 +11,7 @@ export type TransactionInput = {
 	categoryId: string | null;
 	amount: number;
 	toAmount: number | null;
+	fee: number | null;
 	occurredAt: string;
 	note: string | null;
 };
@@ -24,6 +25,7 @@ export function parseTransactionForm(data: FormData, fallbackOffsetMinutes: numb
 	const toAccountId = readFormText(data, 'toAccountId');
 	const categoryId = readFormText(data, 'categoryId');
 	const rawToAmount = readFormText(data, 'toAmount');
+	const rawFee = readFormText(data, 'fee');
 	const note = readFormText(data, 'note');
 	const offsetInput = Number(readFormText(data, 'tzOffset'));
 	const offsetMinutes = readFormText(data, 'tzOffset') !== '' && Number.isFinite(offsetInput) ? offsetInput : fallbackOffsetMinutes;
@@ -32,6 +34,7 @@ export function parseTransactionForm(data: FormData, fallbackOffsetMinutes: numb
 	const occurredAt = parseLocalDatetime(readFormText(data, 'occurredAt'), offsetMinutes);
 	const isTransfer = type === 'transfer';
 	const toAmount = isTransfer && rawToAmount ? parseAmountInput(rawToAmount) : null;
+	const fee = isTransfer && rawFee ? parseAmountInput(rawFee) : null;
 
 	if (!TRANSACTION_TYPES.includes(type)) return { ok: false, message: 'Pilih jenis transaksi.' };
 	if (amount === null) return { ok: false, message: 'Jumlah harus angka bulat lebih dari 0.' };
@@ -41,6 +44,7 @@ export function parseTransactionForm(data: FormData, fallbackOffsetMinutes: numb
 	if (isTransfer && rawToAmount && toAmount === null) {
 		return { ok: false, message: 'Jumlah diterima harus angka bulat lebih dari 0.' };
 	}
+	if (isTransfer && rawFee && fee === null) return { ok: false, message: 'Biaya admin harus angka bulat lebih dari 0.' };
 	if (!occurredAt) return { ok: false, message: 'Tanggal dan waktu tidak valid.' };
 	if (note.length > MAX_NOTE_LENGTH) return { ok: false, message: 'Catatan maksimal 500 karakter.' };
 
@@ -53,6 +57,7 @@ export function parseTransactionForm(data: FormData, fallbackOffsetMinutes: numb
 			categoryId: isTransfer || !categoryId ? null : categoryId,
 			amount,
 			toAmount,
+			fee,
 			occurredAt: occurredAt.toISOString(),
 			note: note || null
 		}

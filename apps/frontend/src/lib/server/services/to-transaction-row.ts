@@ -16,6 +16,7 @@ export function toTransactionRow(
 		type: transaction.type,
 		amount: transaction.amount,
 		toAmount: transaction.toAmount,
+		fee: transaction.fee,
 		currency: account?.currency ?? 'IDR',
 		toCurrency: toAccount?.currency ?? null,
 		accountId: transaction.accountId,

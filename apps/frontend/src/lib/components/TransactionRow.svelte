@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { TRANSACTION_TYPE_DISPLAY } from '#lib/data/transaction-type-display.ts';
 	import type { TransactionRowData } from '#lib/types/transaction-row.types.ts';
+	import { describeTransactionTitle } from '#lib/utils/describe-transaction-title.ts';
 	import { formatCurrency } from '#lib/utils/format-currency.ts';
 
 	type Props = { row: TransactionRowData; meta: string; onselect?: () => void };
@@ -8,7 +9,7 @@
 	let { row, meta, onselect }: Props = $props();
 
 	const display = $derived(TRANSACTION_TYPE_DISPLAY[row.type]);
-	const description = $derived(row.note || row.categoryName || display.label);
+	const description = $derived(describeTransactionTitle(row));
 	const amountText = $derived(`${display.sign}${formatCurrency(row.amount, row.currency)}`);
 	const receivedText = $derived(
 		row.type === 'transfer' && row.toAmount !== null && row.toCurrency
