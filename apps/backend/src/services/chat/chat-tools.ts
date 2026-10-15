@@ -4,7 +4,7 @@ import { AppError } from '../../errors/app-error';
 import type { TransactionProposal, TransactionProposalDraft } from '../../types/ai.types';
 import type { Category, Transaction, TransactionFilters } from '../../types/finance.types';
 import type { PeriodSummary } from '../../types/report.types';
-import { parseToolDate } from '../../utils/chat/parse-tool-date';
+import { parseToolDate } from '../../domain/chat/parse-tool-date';
 import type { AccountWithBalance } from '../account.service';
 import type { CreateTransactionInput } from '../transaction.service';
 

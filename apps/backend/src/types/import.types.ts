@@ -1,4 +1,4 @@
-import type { DecimalSeparator } from '../utils/import/parse-amount';
+import type { DecimalSeparator } from '../domain/import/parse-amount';
 
 export type ImportTransactionType = 'income' | 'expense';
 

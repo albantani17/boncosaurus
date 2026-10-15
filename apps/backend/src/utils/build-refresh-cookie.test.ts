@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { buildRefreshCookie } from './build-refresh-cookie';
-import type { AuthConfig } from './parse-auth-config';
+import type { AuthConfig } from '../config/parse-auth-config';
 
 const config: AuthConfig = {
   jwtSecret: 'x'.repeat(32),

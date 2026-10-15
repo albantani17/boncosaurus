@@ -1,4 +1,4 @@
-import type { AuthConfig } from './parse-auth-config';
+import type { AuthConfig } from '../config/parse-auth-config';
 
 export const REFRESH_COOKIE_NAME = 'refresh_token';
 export const REFRESH_COOKIE_PATH = '/auth';

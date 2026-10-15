@@ -1,4 +1,4 @@
-import type { CategoryRow, DefaultCategory } from '../types/bootstrap.types';
+import type { CategoryRow, DefaultCategory } from '../../types/bootstrap.types';
 
 export function buildCategoryRows(
   workspaceId: string,

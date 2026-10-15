@@ -1,4 +1,4 @@
-import type { SecretKey } from './secret-box';
+import type { SecretKey } from '../integrations/crypto/secret-box';
 
 export type AiConfig = { secretKey: SecretKey | null };
 

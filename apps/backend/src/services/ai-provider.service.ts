@@ -14,13 +14,13 @@ import type {
   AiProviderRecord,
   PublicAiProvider
 } from '../types/ai.types';
-import type { LanguageModelSettings } from '../utils/ai/create-language-model';
-import { describeProviderError } from '../utils/ai/describe-provider-error';
-import type { ModelListSettings } from '../utils/ai/list-provider-models';
+import type { LanguageModelSettings } from '../integrations/ai/create-language-model';
+import { describeProviderError } from '../integrations/ai/describe-provider-error';
+import type { ModelListSettings } from '../integrations/ai/list-provider-models';
 import { isUniqueViolation } from '../utils/is-unique-violation';
-import { maskSecret } from '../utils/ai/mask-secret';
-import { normalizeBaseUrl } from '../utils/ai/normalize-base-url';
-import type { SecretKey } from '../utils/ai/secret-box';
+import { maskSecret } from '../utils/mask-secret';
+import { normalizeBaseUrl } from '../integrations/ai/normalize-base-url';
+import type { SecretKey } from '../integrations/crypto/secret-box';
 
 export type ActorContext = { userId: string; workspaceId: string };
 

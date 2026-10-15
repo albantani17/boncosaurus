@@ -13,7 +13,7 @@ import {
   type TransactionDraft,
   type TransactionReferences,
   validateTransaction
-} from '../utils/transaction/validate-transaction';
+} from '../domain/transaction/validate-transaction';
 
 export type CreateTransactionInput = Pick<
   NewTransaction,

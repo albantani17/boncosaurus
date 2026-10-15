@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { DefaultCategory } from '../types/bootstrap.types';
+import type { DefaultCategory } from '../../types/bootstrap.types';
 import { buildCategoryRows } from './build-category-rows';
 
 const createIdGenerator = () => {

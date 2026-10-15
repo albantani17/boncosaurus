@@ -2,9 +2,9 @@ import { describe, expect, test } from 'bun:test';
 import type { AiProviderRepository } from '../repositories/ai-provider.repository';
 import type { AiProviderRecord } from '../types/ai.types';
 import type { WorkspaceMembership } from '../types/auth.types';
-import type { LanguageModelSettings } from '../utils/ai/create-language-model';
-import type { ModelListSettings } from '../utils/ai/list-provider-models';
-import type { SecretKey } from '../utils/ai/secret-box';
+import type { LanguageModelSettings } from '../integrations/ai/create-language-model';
+import type { ModelListSettings } from '../integrations/ai/list-provider-models';
+import type { SecretKey } from '../integrations/crypto/secret-box';
 import { createAiProviderService } from './ai-provider.service';
 
 const KEY = new Uint8Array(32);

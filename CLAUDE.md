@@ -38,13 +38,17 @@ There is no linter or formatter configured. Backend code uses 2-space indentatio
 
 ## Backend architecture
 
-Every request goes through these layers: `routes/` → `services/` → `repositories/` → `db/`.
+Every request goes through these layers: `routes/` → `services/` → `repositories/` → `db/`. Services call pure rules in `domain/` and external libraries through `integrations/`.
 
 - **`container.ts`** is the composition root. It builds every service by passing in concrete repositories, crypto helpers, `now()`, ID generators, and parsed config. Routes and plugins import services from here and never construct them.
-- **Services** are factory functions (`createXService(deps)`) that depend on repository *types*, often narrowed with `Pick<…>`. They contain the business logic and throw `AppError` subclasses (`errors/app-error.ts`). They never import `db`. This is what keeps them unit-testable: `*.service.test.ts` passes in-memory fake repositories built in a `setup()` helper.
+- **Services** are factory functions (`createXService(deps)`) that depend on repository *types*, often narrowed with `Pick<…>`. They orchestrate a use case (load, apply `domain/` rules, save) and throw `AppError` subclasses (`errors/app-error.ts`). They never import `db`. This is what keeps them unit-testable: `*.service.test.ts` passes in-memory fake repositories built in a `setup()` helper.
 - **Repositories** are plain objects typed by an exported `XRepository` type. They are the only code that imports `db`. Every query takes `workspaceId` and filters on it.
 - **Routes** are Elysia instances with a `prefix`, registered in `routes/index.ts`. Request validation uses TypeBox schemas from `schemas/` (`t.Object…`).
-- **`utils/`** holds pure functions grouped into domain folders (`ai/`, `auth/`, `chat/`, `import/`, `report/`, `transaction/`), each in its own file with a co-located `*.test.ts`. Domain rules worth knowing: `validate-transaction.ts` covers transfer shape, category/type match, archived references, and cross-currency `toAmount`. `calculate-account-balance.ts` covers balance math.
+- **`domain/<feature>/`** (`transaction/`, `report/`, `import/`, `chat/`, `category/`) holds the business rules as pure functions with no I/O. It may import other `domain/` files, `types/` and `utils/`, never services, repositories, integrations or `db`.
+- **`integrations/`** wraps external libraries: `ai/` (AI SDK models and provider calls), `crypto/` (password hashing, refresh tokens, `secret-box`), `files/` (CSV/XLSX/PDF extraction, with test fixtures in `files/fixtures/`).
+- **`config/`** parses env into typed config (`parse-auth-config`, `parse-ai-config`, `parse-bootstrap-config`).
+- **`utils/`** is only for generic helpers that know nothing about the business (`merge-defined`, `chunk-text`, `mask-secret`, …).
+- Every file in these folders holds one function with a co-located `*.test.ts`. Domain rules worth knowing: `validate-transaction.ts` covers transfer shape, category/type match, archived references, and cross-currency `toAmount`. `calculate-account-balance.ts` covers balance math.
 - **`types/`** derives row types from the Drizzle schema (`$inferSelect`/`$inferInsert`) along with the patch and filter types.
 
 ### Errors
@@ -53,26 +57,26 @@ Every request goes through these layers: `routes/` → `services/` → `reposito
 
 ### Auth and multi-tenancy
 
-- Login returns a short-lived JWT access token (HS256 via `jose`) in the response body. The refresh token is set as an httpOnly cookie (see `utils/auth/build-refresh-cookie.ts`). CORS uses `credentials: true` with `FRONTEND_ORIGIN`.
+- Login returns a short-lived JWT access token (HS256 via `jose`) in the response body. The refresh token is set as an httpOnly cookie (see `utils/build-refresh-cookie.ts`). CORS uses `credentials: true` with `FRONTEND_ORIGIN`.
 - Refresh tokens are stored hashed and grouped by `familyId`. Each refresh rotates the token. Reusing a revoked token, or losing the rotation race, revokes the whole family (`auth.service.ts`).
 - Profile endpoints live in `routes/profile.routes.ts` under `/auth/me` (prefix kept under `/auth` so the refresh cookie path still matches). `PATCH /auth/me` changes name/email; changing the email requires `currentPassword`. `POST /auth/me/password` revokes every refresh token of the user, then starts a fresh session for the caller (`authService.startSession`) and sets a new refresh cookie.
 - The plugins are scoped `resolve` hooks. `authPlugin` adds `userId`. `workspacePlugin` adds `userId` and `workspaceId`: it takes the optional `X-Workspace-Id` header and checks membership, and without the header it falls back to the user's first workspace. Workspace-scoped routes `.use(workspacePlugin)`.
 
 ### Reports
 
-`GET /reports/summary?from&to` returns income/expense totals per currency plus per-category totals for the range. Transfers are excluded and currencies are never mixed (currency comes from the transaction's account). The one exception is a transfer's optional `fee` (admin fee, transfers only, in the source account currency): it reduces the source balance (`amount + fee`) and is counted as an uncategorized expense (`utils/report/add-transfer-fees.ts`).
+`GET /reports/summary?from&to` returns income/expense totals per currency plus per-category totals for the range. Transfers are excluded and currencies are never mixed (currency comes from the transaction's account). The one exception is a transfer's optional `fee` (admin fee, transfers only, in the source account currency): it reduces the source balance (`amount + fee`) and is counted as an uncategorized expense (`domain/report/add-transfer-fees.ts`).
 
 ### AI chat
 
 - Built on the Vercel AI SDK v7 (`ai`, `@ai-sdk/*`). v7 names differ from older docs: `instructions` (not `system`), `isStepCount`, `toUIMessageStream` + `createUIMessageStreamResponse` with `onEnd`, `createGoogle`.
-- **Providers** (`ai_providers`, per workspace, managed by owner/admin) are Anthropic, OpenAI, Google, or `openai_compatible` with a `baseUrl` (Ollama, LM Studio, OpenRouter, …). One row is one model profile; one row per workspace is `isDefault`. API keys are AES-GCM encrypted with `AI_SECRET_KEY` (`utils/ai/secret-box.ts`) and never returned; responses carry `hasApiKey`/`apiKeyHint`. Without `AI_SECRET_KEY` every AI endpoint returns `AI_NOT_CONFIGURED` (503). `utils/ai/create-language-model.ts` maps a provider row to a model.
+- **Providers** (`ai_providers`, per workspace, managed by owner/admin) are Anthropic, OpenAI, Google, or `openai_compatible` with a `baseUrl` (Ollama, LM Studio, OpenRouter, …). One row is one model profile; one row per workspace is `isDefault`. API keys are AES-GCM encrypted with `AI_SECRET_KEY` (`integrations/crypto/secret-box.ts`) and never returned; responses carry `hasApiKey`/`apiKeyHint`. Without `AI_SECRET_KEY` every AI endpoint returns `AI_NOT_CONFIGURED` (503). `integrations/ai/create-language-model.ts` maps a provider row to a model.
 - **Chat** (`/chat/conversations`, private per user): the client sends only the new message; `chat.service.ts` keeps only its text, loads history from `chat_messages` (UIMessage `parts` as jsonb), saves the user message before streaming and the assistant message in `onEnd`. All message ids are server-generated UUIDv7. `result.consumeStream()` keeps saving if the browser disconnects.
 - **Tools** (`services/chat/chat-tools.ts`) read through the existing services. `proposeTransaction` only validates (`transactionService.previewTransaction`) and returns a draft; `POST …/drafts/confirm` creates the transaction with `source: 'ai'` and rewrites the stored tool output to `saved` (idempotent, serialized per draft). Tool dates must be ISO with an offset; the system prompt gives the current time in the browser's time zone.
 
 ### Import
 
 `POST /imports/preview` (multipart: `file`, `timeZone`, `utcOffsetMinutes`) is stateless and returns a draft; `POST /imports/commit` (JSON) re-validates everything and writes in one DB transaction (`import.repository.ts`), with `source: 'import'`. Formats: CSV/TSV (`papaparse`), XLSX (`read-excel-file`), PDF with text (`unpdf`), JSON/TXT; at most 5 MB and 2000 rows.
-- `import-preview.service.ts`: `extract-*` utils → `ExtractedContent`. For tables the AI only sees the header plus ~25 rows and returns a `ColumnMapping` that `apply-column-mapping.ts` applies to every row; text is chunked and the AI extracts transactions per chunk. Missing categories are filled by one AI call per batch of unique descriptions. `build-import-rows.ts` then matches accounts/categories by name (unmatched ones become "create new" drafts), flags duplicates (`detect-duplicates.ts`, one-to-one against existing transactions) and validates each row with `validateTransaction`. Prompts treat file content as data (`build-import-system-prompt.ts`); AI calls live in `import-ai.ts` (`Output.object` + zod).
+- `import-preview.service.ts`: `integrations/files/extract-*` → `ExtractedContent`. For tables the AI only sees the header plus ~25 rows and returns a `ColumnMapping` that `apply-column-mapping.ts` applies to every row; text is chunked and the AI extracts transactions per chunk. Missing categories are filled by one AI call per batch of unique descriptions. `build-import-rows.ts` then matches accounts/categories by name (unmatched ones become "create new" drafts), flags duplicates (`detect-duplicates.ts`, one-to-one against existing transactions) and validates each row with `validateTransaction`. Prompts treat file content as data (`build-import-system-prompt.ts`); AI calls live in `import-ai.ts` (`Output.object` + zod).
 - `import-commit.service.ts` resolves the account/category drafts (an `accountId`/`categoryId` maps to an existing record, a name collision reuses the existing one), generates ids for new ones, and rejects the whole batch if any row is invalid.
 - Frontend: `transaksi/impor` has three steps (upload → review → result) driven by the `?/preview` and `?/commit` actions. `ImportReview.svelte` keeps row selection and account/category mapping client-side and submits `buildCommitPayload(...)` as one JSON field. `create-backend-client.ts` passes `FormData` through untouched. The frontend container needs `BODY_SIZE_LIMIT` (adapter-node defaults to 512 KB).
 

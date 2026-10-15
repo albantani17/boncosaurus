@@ -2,7 +2,7 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 import { db } from '../db';
 import { categories, users, workspaceMembers, workspaces } from '../db/schema';
 import type { BootstrapRepository } from '../types/bootstrap.types';
-import { buildCategoryRows } from '../utils/build-category-rows';
+import { buildCategoryRows } from '../domain/category/build-category-rows';
 
 export const bootstrapRepository: BootstrapRepository = {
   async countUsers() {
