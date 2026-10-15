@@ -5,6 +5,7 @@ import type { WorkspaceMembership } from '../../types/auth.types';
 import type { LanguageModelSettings } from '../../integrations/ai/create-language-model';
 import type { ModelListSettings } from '../../integrations/ai/list-provider-models';
 import type { SecretKey } from '../../integrations/crypto/secret-box';
+import { createRecordingLogger } from '../../integrations/logging/create-recording-logger';
 import { createAiProviderService } from './ai-provider.service';
 
 const KEY = new Uint8Array(32);
@@ -67,6 +68,7 @@ function setup({
   fetchModels = async (_settings: ModelListSettings): Promise<string[]> => ['model-a']
 } = {}) {
   const fake = createFakeRepository(providers);
+  const recorder = createRecordingLogger();
   const service = createAiProviderService({
     providers: fake.repository,
     workspaces: { findRole: async () => role },
@@ -74,9 +76,10 @@ function setup({
     encryptSecret: async (_key, plaintext) => `sealed:${plaintext}`,
     decryptSecret: async (_key, sealed) => sealed.replace('sealed:', ''),
     probeModel,
-    fetchModels
+    fetchModels,
+    logger: recorder.logger
   });
-  return { service, rows: fake.rows };
+  return { service, rows: fake.rows, events: recorder.events };
 }
 
 describe('listProviders', () => {
@@ -245,17 +248,18 @@ describe('testProvider', () => {
   });
 
   test('maps probe failures to AI_PROVIDER_FAILED', async () => {
-    const { service } = setup({
+    const { service, events } = setup({
       providers: [makeProvider()],
       probeModel: async () => {
         throw new Error('Invalid API key');
       }
     });
-    expect(service.testProvider(actor, 'p1')).rejects.toMatchObject({
+    await expect(service.testProvider(actor, 'p1')).rejects.toMatchObject({
       status: 502,
       code: 'AI_PROVIDER_FAILED',
       message: 'Invalid API key'
     });
+    expect(events()).toEqual(['ai.probe_failed']);
   });
 });
 

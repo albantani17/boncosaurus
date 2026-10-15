@@ -2,6 +2,7 @@ import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from
 import type { RefreshTokenRepository } from '../../repositories/refresh-token.repository';
 import type { UserRepository } from '../../repositories/user.repository';
 import type { ProfilePatch, PublicUser, UserRecord } from '../../types/auth.types';
+import type { ServiceLogger } from '../../types/logger.types';
 import { isUniqueViolation } from '../../utils/is-unique-violation';
 
 type Dependencies = {
@@ -9,6 +10,7 @@ type Dependencies = {
   refreshTokens: Pick<RefreshTokenRepository, 'revokeAllForUser'>;
   verifyPassword: (password: string, hash: string) => Promise<boolean>;
   hashPassword: (password: string) => Promise<string>;
+  logger: ServiceLogger;
 };
 
 export type UpdateProfileInput = ProfilePatch & { currentPassword?: string };
@@ -47,6 +49,7 @@ export function createProfileService(deps: Dependencies) {
       try {
         const updated = await deps.users.updateProfile(userId, patch);
         if (!updated) throw new NotFoundError('User');
+        if (isChangingEmail) deps.logger.info({ event: 'auth.email_changed', userId }, 'email changed');
         return toPublicUser(updated);
       } catch (error) {
         if (isUniqueViolation(error)) {
@@ -65,6 +68,7 @@ export function createProfileService(deps: Dependencies) {
 
       await deps.users.setPasswordHash(userId, await deps.hashPassword(newPassword));
       await deps.refreshTokens.revokeAllForUser(userId);
+      deps.logger.info({ event: 'auth.password_changed', userId }, 'password changed');
     }
   };
 }

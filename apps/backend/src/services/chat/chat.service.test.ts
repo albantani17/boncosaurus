@@ -6,6 +6,7 @@ import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '.
 import type { Transaction } from '../../types/finance.types';
 import { findProposal } from '../../domain/chat/proposal-parts';
 import type { AccountWithBalance } from '../account/account.service';
+import { createRecordingLogger } from '../../integrations/logging/create-recording-logger';
 import { createChatService } from './chat.service';
 import type { CreateTransactionInput } from '../transaction/transaction.service';
 
@@ -145,7 +146,8 @@ function setup({
     },
     createModel: () => model,
     generateId: () => `id-${nextId++}`,
-    now: () => now
+    now: () => now,
+    logger: createRecordingLogger().logger
   });
 
   return { service, state, created, model };

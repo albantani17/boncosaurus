@@ -24,12 +24,15 @@ import { createWorkspaceService } from './services/workspace/workspace.service';
 import { createLanguageModel } from './integrations/ai/create-language-model';
 import { parseAiConfig } from './config/parse-ai-config';
 import { parseAuthConfig } from './config/parse-auth-config';
+import { parseLogConfig } from './config/parse-log-config';
+import { createLogger } from './integrations/logging/create-logger';
 import { DUMMY_PASSWORD_HASH, hashPassword, verifyPassword } from './integrations/crypto/password';
 import { listProviderModels } from './integrations/ai/list-provider-models';
 import { probeLanguageModel } from './integrations/ai/probe-language-model';
 import { generateRefreshToken, hashRefreshToken } from './integrations/crypto/refresh-token';
 import { decryptSecret, encryptSecret } from './integrations/crypto/secret-box';
 
+export const logger = createLogger(parseLogConfig(process.env));
 export const authConfig = parseAuthConfig(process.env);
 export const aiConfig = parseAiConfig(process.env);
 
@@ -49,14 +52,16 @@ export const authService = createAuthService({
   generateFamilyId: () => Bun.randomUUIDv7(),
   now: () => new Date(),
   accessTtlSeconds: authConfig.accessTtlSeconds,
-  refreshTtlSeconds: authConfig.refreshTtlSeconds
+  refreshTtlSeconds: authConfig.refreshTtlSeconds,
+  logger
 });
 
 export const profileService = createProfileService({
   users: userRepository,
   refreshTokens: refreshTokenRepository,
   verifyPassword,
-  hashPassword
+  hashPassword,
+  logger
 });
 
 export const workspaceService = createWorkspaceService(workspaceRepository);
@@ -76,7 +81,8 @@ export const aiProviderService = createAiProviderService({
   encryptSecret,
   decryptSecret,
   probeModel: probeLanguageModel,
-  fetchModels: (settings) => listProviderModels(settings)
+  fetchModels: (settings) => listProviderModels(settings),
+  logger
 });
 
 export const chatService = createChatService({
@@ -92,7 +98,8 @@ export const chatService = createChatService({
   transactions: transactionService,
   createModel: createLanguageModel,
   generateId: () => Bun.randomUUIDv7(),
-  now: () => new Date()
+  now: () => new Date(),
+  logger
 });
 
 export const importPreviewService = createImportPreviewService({
@@ -102,7 +109,8 @@ export const importPreviewService = createImportPreviewService({
   accounts: accountRepository,
   categories: categoryRepository,
   imports: importRepository,
-  now: () => new Date()
+  now: () => new Date(),
+  logger
 });
 
 export const importCommitService = createImportCommitService({

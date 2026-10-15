@@ -13,6 +13,7 @@ import type { ChatRepository } from '../../repositories/chat.repository';
 import type { WorkspaceRepository } from '../../repositories/workspace.repository';
 import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '../../types/ai.types';
 import type { Transaction } from '../../types/finance.types';
+import type { ServiceLogger } from '../../types/logger.types';
 import { buildChatSystemPrompt } from '../../domain/chat/build-chat-system-prompt';
 import type { LanguageModelSettings } from '../../integrations/ai/create-language-model';
 import { deriveConversationTitle } from '../../domain/chat/derive-conversation-title';
@@ -41,6 +42,7 @@ type Dependencies = {
   createModel: (settings: LanguageModelSettings) => LanguageModel;
   generateId: () => string;
   now: () => Date;
+  logger: ServiceLogger;
 };
 
 const MAX_STEPS = 6;
@@ -69,7 +71,8 @@ export function createChatService(deps: Dependencies) {
   async function validateHistory(messages: UIMessage[], tools: ReturnType<typeof createChatTools>) {
     try {
       return await validateUIMessages({ messages, tools });
-    } catch {
+    } catch (error) {
+      deps.logger.warn({ event: 'chat.history_invalid', err: error }, 'stored chat history no longer validates');
       return messages.slice(-1);
     }
   }
@@ -179,16 +182,29 @@ export function createChatService(deps: Dependencies) {
           tools,
           originalMessages: messages,
           generateMessageId: deps.generateId,
-          onError: describeProviderError,
+          onError: (error) => {
+            deps.logger.error(
+              { event: 'chat.stream_failed', err: error, conversationId, workspaceId: actor.workspaceId },
+              'chat stream failed'
+            );
+            return describeProviderError(error);
+          },
           onEnd: async ({ responseMessage }) => {
             if (responseMessage.parts.length === 0) return;
-            await chats.saveMessage({
-              id: responseMessage.id,
-              workspaceId: actor.workspaceId,
-              conversationId,
-              role: 'assistant',
-              parts: responseMessage.parts
-            });
+            try {
+              await chats.saveMessage({
+                id: responseMessage.id,
+                workspaceId: actor.workspaceId,
+                conversationId,
+                role: 'assistant',
+                parts: responseMessage.parts
+              });
+            } catch (error) {
+              deps.logger.error(
+                { event: 'chat.save_failed', err: error, conversationId, workspaceId: actor.workspaceId },
+                'failed to save the assistant message'
+              );
+            }
           }
         })
       });

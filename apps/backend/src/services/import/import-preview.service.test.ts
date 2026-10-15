@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { Account, Category } from '../../types/finance.types';
 import type { ColumnMapping } from '../../types/import.types';
 import type { ImportAi } from './import-ai';
+import { createRecordingLogger } from '../../integrations/logging/create-recording-logger';
 import { createImportPreviewService } from './import-preview.service';
 
 const actor = { userId: 'user-1', workspaceId: 'ws-1' };
@@ -25,6 +26,7 @@ function setup(overrides: Partial<ImportAi> = {}) {
     },
     ...overrides
   };
+  const recorder = createRecordingLogger();
   const service = createImportPreviewService({
     ai,
     providers: { resolveProvider: async () => ({ providerId: 'p', settings: { kind: 'openai', model: 'm', baseUrl: null, apiKey: null } }) },
@@ -32,9 +34,10 @@ function setup(overrides: Partial<ImportAi> = {}) {
     accounts: { list: async () => [bca] },
     categories: { list: async () => [makan] },
     imports: { listTransactionsInRange: async () => [] },
-    now: () => new Date('2026-10-15T02:00:00Z')
+    now: () => new Date('2026-10-15T02:00:00Z'),
+    logger: recorder.logger
   });
-  return { service, calls };
+  return { service, calls, events: recorder.events };
 }
 
 const csv = (text: string) => new TextEncoder().encode(text);
@@ -79,9 +82,10 @@ describe('previewImport', () => {
   });
 
   test('turns AI failures into a bad gateway error', async () => {
-    const { service } = setup({ inferColumnMapping: async () => { throw new Error('model offline'); } });
+    const { service, events } = setup({ inferColumnMapping: async () => { throw new Error('model offline'); } });
     await expect(service.previewImport(actor, { fileName: 'a.csv', bytes: csv('a,b,c\n1,2,3') })).rejects.toMatchObject({
       status: 502, code: 'AI_REQUEST_FAILED'
     });
+    expect(events()).toEqual(['import.ai_failed']);
   });
 });

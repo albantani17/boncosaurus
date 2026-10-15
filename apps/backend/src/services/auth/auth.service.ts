@@ -3,6 +3,7 @@ import type { RefreshTokenRepository } from '../../repositories/refresh-token.re
 import type { UserRepository } from '../../repositories/user.repository';
 import type { WorkspaceRepository } from '../../repositories/workspace.repository';
 import type { AuthTokens, PublicUser, WorkspaceMembership } from '../../types/auth.types';
+import type { ServiceLogger } from '../../types/logger.types';
 
 type Dependencies = {
   users: Pick<UserRepository, 'findByEmail' | 'findById'>;
@@ -17,6 +18,7 @@ type Dependencies = {
   now: () => Date;
   accessTtlSeconds: number;
   refreshTtlSeconds: number;
+  logger: ServiceLogger;
 };
 
 export type LoginResult = AuthTokens & { user: PublicUser };
@@ -50,15 +52,18 @@ export function createAuthService(deps: Dependencies) {
     startSession,
 
     async login(email: string, password: string): Promise<LoginResult> {
-      const user = await deps.users.findByEmail(email.trim().toLowerCase());
+      const normalizedEmail = email.trim().toLowerCase();
+      const user = await deps.users.findByEmail(normalizedEmail);
       const passwordMatches = await deps.verifyPassword(
         password,
         user?.passwordHash ?? deps.dummyPasswordHash
       );
       if (!user?.passwordHash || !passwordMatches) {
+        deps.logger.warn({ event: 'auth.login_failed', email: normalizedEmail }, 'login failed');
         throw new UnauthorizedError('INVALID_CREDENTIALS', 'Invalid email or password');
       }
 
+      deps.logger.info({ event: 'auth.login', userId: user.id }, 'login');
       return { user: toPublicUser(user), ...(await startSession(user.id)) };
     },
 
@@ -70,6 +75,10 @@ export function createAuthService(deps: Dependencies) {
 
       const rejectAsReused = async () => {
         await deps.refreshTokens.revokeFamily(current.familyId);
+        deps.logger.warn(
+          { event: 'auth.refresh_reused', userId: current.userId, familyId: current.familyId },
+          'refresh token reused, session family revoked'
+        );
         throw new UnauthorizedError('REFRESH_TOKEN_REUSED', 'Refresh token was already used');
       };
 
@@ -100,7 +109,9 @@ export function createAuthService(deps: Dependencies) {
     async logout(refreshToken: string | undefined): Promise<void> {
       if (!refreshToken) return;
       const current = await deps.refreshTokens.findByHash(deps.hashRefreshToken(refreshToken));
-      if (current) await deps.refreshTokens.revokeFamily(current.familyId);
+      if (!current) return;
+      await deps.refreshTokens.revokeFamily(current.familyId);
+      deps.logger.info({ event: 'auth.logout', userId: current.userId }, 'logout');
     },
 
     async getProfile(userId: string): Promise<Profile> {

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import type { RefreshTokenRepository } from '../../repositories/refresh-token.repository';
 import type { NewRefreshToken, RefreshTokenRecord, UserRecord } from '../../types/auth.types';
+import { createRecordingLogger } from '../../integrations/logging/create-recording-logger';
 import { createAuthService } from './auth.service';
 
 const NOW = new Date('2026-10-13T12:00:00Z');
@@ -37,6 +38,7 @@ const createHarness = (
     }
   };
 
+  const recorder = createRecordingLogger();
   const service = createAuthService({
     users: {
       findByEmail: async (email) => users.find((candidate) => candidate.email === email),
@@ -54,10 +56,11 @@ const createHarness = (
     generateFamilyId: () => 'family-1',
     now: () => NOW,
     accessTtlSeconds: 900,
-    refreshTtlSeconds: 3600
+    refreshTtlSeconds: 3600,
+    logger: recorder.logger
   });
 
-  return { service, stored, revokedFamilies };
+  return { service, stored, revokedFamilies, events: recorder.events };
 };
 
 const tokenRecord = (overrides: Partial<RefreshTokenRecord> = {}): RefreshTokenRecord => ({
@@ -84,6 +87,14 @@ describe('login', () => {
       refreshToken: 'refresh-1',
       refreshMaxAgeSeconds: 3600
     });
+  });
+
+  test('logs a successful login', async () => {
+    const { service, events } = createHarness();
+
+    await service.login('admin@example.com', 'secret123');
+
+    expect(events()).toEqual(['auth.login']);
   });
 
   test('never returns the password hash', async () => {
@@ -113,12 +124,13 @@ describe('login', () => {
   });
 
   test('rejects a wrong password', async () => {
-    const { service } = createHarness();
+    const { service, events } = createHarness();
 
     await expect(service.login('admin@example.com', 'wrong')).rejects.toMatchObject({
       status: 401,
       code: 'INVALID_CREDENTIALS'
     });
+    expect(events()).toEqual(['auth.login_failed']);
   });
 
   test('rejects an unknown email with the same error as a wrong password', async () => {
@@ -165,12 +177,13 @@ describe('refresh', () => {
   });
 
   test('revokes the whole family when a revoked token is reused', async () => {
-    const { service, revokedFamilies } = createHarness({
+    const { service, revokedFamilies, events } = createHarness({
       tokens: [tokenRecord({ revokedAt: NOW })]
     });
 
     await expect(service.refresh('old')).rejects.toMatchObject({ code: 'REFRESH_TOKEN_REUSED' });
     expect(revokedFamilies).toEqual(['family-1']);
+    expect(events()).toEqual(['auth.refresh_reused']);
   });
 
   test('treats a lost rotation race as reuse and revokes the family', async () => {
@@ -192,11 +205,12 @@ describe('refresh', () => {
 
 describe('logout', () => {
   test('revokes the family of the presented token', async () => {
-    const { service, revokedFamilies } = createHarness({ tokens: [tokenRecord()] });
+    const { service, revokedFamilies, events } = createHarness({ tokens: [tokenRecord()] });
 
     await service.logout('old');
 
     expect(revokedFamilies).toEqual(['family-1']);
+    expect(events()).toEqual(['auth.logout']);
   });
 
   test('does nothing without a token', async () => {

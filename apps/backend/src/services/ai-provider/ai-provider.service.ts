@@ -14,6 +14,7 @@ import type {
   AiProviderRecord,
   PublicAiProvider
 } from '../../types/ai.types';
+import type { ServiceLogger } from '../../types/logger.types';
 import type { LanguageModelSettings } from '../../integrations/ai/create-language-model';
 import { describeProviderError } from '../../integrations/ai/describe-provider-error';
 import type { ModelListSettings } from '../../integrations/ai/list-provider-models';
@@ -52,6 +53,7 @@ type Dependencies = {
   decryptSecret: (key: SecretKey, sealed: string) => Promise<string>;
   probeModel: (settings: LanguageModelSettings) => Promise<void>;
   fetchModels: (settings: ModelListSettings) => Promise<string[]>;
+  logger: ServiceLogger;
 };
 
 const MANAGER_ROLES = new Set(['owner', 'admin']);
@@ -205,6 +207,10 @@ export function createAiProviderService(deps: Dependencies) {
       try {
         await deps.probeModel(settings);
       } catch (error) {
+        deps.logger.warn(
+          { event: 'ai.probe_failed', err: error, kind: settings.kind, model: settings.model, baseUrl: settings.baseUrl },
+          'AI provider test failed'
+        );
         throw new BadGatewayError('AI_PROVIDER_FAILED', describeProviderError(error));
       }
       return { ok: true };
@@ -223,6 +229,10 @@ export function createAiProviderService(deps: Dependencies) {
       try {
         return { models: await deps.fetchModels({ kind: input.kind, baseUrl, apiKey: typedKey || storedKey }) };
       } catch (error) {
+        deps.logger.warn(
+          { event: 'ai.list_models_failed', err: error, kind: input.kind, baseUrl },
+          'listing AI provider models failed'
+        );
         throw new BadGatewayError('AI_PROVIDER_FAILED', describeProviderError(error));
       }
     },

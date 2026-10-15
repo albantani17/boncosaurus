@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import type { UserRecord } from '../../types/auth.types';
+import { createRecordingLogger } from '../../integrations/logging/create-recording-logger';
 import { createProfileService } from './profile.service';
 
 const user: UserRecord = {
@@ -15,6 +16,7 @@ const setup = (options: { updateError?: unknown; stored?: UserRecord } = {}) => 
   const passwordHashes: string[] = [];
   const revokedUsers: string[] = [];
   const stored = options.stored ?? user;
+  const recorder = createRecordingLogger();
   const service = createProfileService({
     users: {
       findById: async (id) => (id === stored.id ? stored : undefined),
@@ -33,9 +35,10 @@ const setup = (options: { updateError?: unknown; stored?: UserRecord } = {}) => 
       }
     },
     verifyPassword: async (password, hash) => hash === `hash:${password}`,
-    hashPassword: async (password) => `hash:${password}`
+    hashPassword: async (password) => `hash:${password}`,
+    logger: recorder.logger
   });
-  return { service, updates, passwordHashes, revokedUsers };
+  return { service, updates, passwordHashes, revokedUsers, events: recorder.events };
 };
 
 describe('updateProfile', () => {
@@ -108,12 +111,13 @@ describe('updateProfile', () => {
 
 describe('changePassword', () => {
   test('stores the new hash and revokes every session of the user', async () => {
-    const { service, passwordHashes, revokedUsers } = setup();
+    const { service, passwordHashes, revokedUsers, events } = setup();
 
     await service.changePassword('user-1', 'secret123', 'brand-new-pass');
 
     expect(passwordHashes).toEqual(['hash:brand-new-pass']);
     expect(revokedUsers).toEqual(['user-1']);
+    expect(events()).toEqual(['auth.password_changed']);
   });
 
   test('rejects a wrong current password without changing anything', async () => {

@@ -4,6 +4,7 @@ import type { CategoryRepository } from '../../repositories/category.repository'
 import type { ImportRepository } from '../../repositories/import.repository';
 import type { WorkspaceRepository } from '../../repositories/workspace.repository';
 import type { ExtractedContent, ImportPreview, ImportTransactionType, RawTransaction } from '../../types/import.types';
+import type { ServiceLogger } from '../../types/logger.types';
 import { applyColumnMapping } from '../../domain/import/apply-column-mapping';
 import { buildImportRows } from '../../domain/import/build-import-rows';
 import { type ImportTask, buildImportSystemPrompt } from '../../domain/import/build-import-system-prompt';
@@ -34,6 +35,7 @@ type Dependencies = {
   categories: Pick<CategoryRepository, 'list'>;
   imports: Pick<ImportRepository, 'listTransactionsInRange'>;
   now: () => Date;
+  logger: ServiceLogger;
 };
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
@@ -159,6 +161,7 @@ export function createImportPreviewService(deps: Dependencies) {
         await fillCategories(raw, call('categorize'));
       } catch (error) {
         if (error instanceof AppError) throw error;
+        deps.logger.error({ event: 'import.ai_failed', err: error, workspaceId: actor.workspaceId }, 'import AI failed');
         throw new BadGatewayError('AI_REQUEST_FAILED', describeProviderError(error));
       }
 
