@@ -38,7 +38,8 @@ export const ERROR_CODES = [
   'IMPORT_TOO_MANY_ROWS',
   'IMPORT_UNREADABLE',
   'IMPORT_EMPTY',
-  'IMPORT_INVALID_ROW'
+  'IMPORT_INVALID_ROW',
+  'INTERNAL_ERROR'
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

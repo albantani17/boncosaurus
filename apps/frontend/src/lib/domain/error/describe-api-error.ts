@@ -35,6 +35,7 @@ const MESSAGES: Record<ErrorCode, string> = {
 	IMPORT_INVALID_ROW: 'Ada transaksi yang tidak valid. Periksa pemetaan akun dan kategori lalu coba lagi.',
 	AI_REQUEST_FAILED: 'AI gagal membaca file. Periksa provider di Pengaturan AI lalu coba lagi.',
 	VALIDATION_ERROR: 'Data yang dikirim tidak valid. Periksa lagi isian formulir.',
+	INTERNAL_ERROR: 'Terjadi kesalahan di server. Coba lagi nanti.',
 	UNAUTHENTICATED: SESSION_EXPIRED,
 	INVALID_REFRESH_TOKEN: SESSION_EXPIRED,
 	REFRESH_TOKEN_EXPIRED: SESSION_EXPIRED,
