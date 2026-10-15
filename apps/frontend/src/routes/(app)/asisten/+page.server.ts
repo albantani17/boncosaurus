@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { runBackendAction } from '#lib/server/services/run-backend-action.ts';
+import { runBackendAction } from '#lib/server/actions/run-backend-action.ts';
 import type { Conversation } from '#lib/types/ai.types.ts';
 import { isUuid } from '#lib/utils/is-uuid.ts';
 import { readFormText } from '#lib/utils/read-form-text.ts';

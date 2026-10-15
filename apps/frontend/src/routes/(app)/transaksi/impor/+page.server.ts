@@ -1,8 +1,8 @@
 import { backendFor } from '#lib/server/api/backend.ts';
-import { formFailure, runBackendAction } from '#lib/server/services/run-backend-action.ts';
+import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
 import type { Account, Category } from '#lib/types/api.types.ts';
 import type { ImportPreview, ImportResult } from '#lib/types/import.types.ts';
-import { parseImportCommitForm, parseImportUploadForm } from '#lib/utils/parse-import-form.ts';
+import { parseImportCommitForm, parseImportUploadForm } from '#lib/domain/import/parse-import-form.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, fetch, parent }) => {

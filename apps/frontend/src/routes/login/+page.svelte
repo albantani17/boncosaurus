@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import BrandMark from '#lib/components/BrandMark.svelte';
-	import DinoSprite from '#lib/components/DinoSprite.svelte';
-	import ForestBanner from '#lib/components/ForestBanner.svelte';
-	import FormMessage from '#lib/components/FormMessage.svelte';
-	import PasswordField from '#lib/components/PasswordField.svelte';
-	import TextField from '#lib/components/TextField.svelte';
+	import BrandMark from '#lib/components/layout/BrandMark.svelte';
+	import DinoSprite from '#lib/components/mascot/DinoSprite.svelte';
+	import ForestBanner from '#lib/components/mascot/ForestBanner.svelte';
+	import FormMessage from '#lib/components/ui/FormMessage.svelte';
+	import PasswordField from '#lib/components/ui/PasswordField.svelte';
+	import TextField from '#lib/components/ui/TextField.svelte';
 	import type { PageProps } from './$types';
 
 	let { form }: PageProps = $props();

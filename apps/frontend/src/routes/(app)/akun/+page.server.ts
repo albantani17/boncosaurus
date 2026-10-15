@@ -1,8 +1,8 @@
 import { backendFor } from '#lib/server/api/backend.ts';
-import { requireRecordId } from '#lib/server/services/require-record-id.ts';
-import { formFailure, runBackendAction } from '#lib/server/services/run-backend-action.ts';
+import { requireRecordId } from '#lib/server/actions/require-record-id.ts';
+import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
 import type { Account } from '#lib/types/api.types.ts';
-import { parseAccountForm } from '#lib/utils/parse-account-form.ts';
+import { parseAccountForm } from '#lib/domain/account/parse-account-form.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, fetch, parent }) => {

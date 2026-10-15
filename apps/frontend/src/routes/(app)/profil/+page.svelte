@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { untrack } from 'svelte';
-	import FormMessage from '#lib/components/FormMessage.svelte';
-	import PasswordField from '#lib/components/PasswordField.svelte';
-	import SubmitButton from '#lib/components/SubmitButton.svelte';
-	import TextField from '#lib/components/TextField.svelte';
+	import FormMessage from '#lib/components/ui/FormMessage.svelte';
+	import PasswordField from '#lib/components/ui/PasswordField.svelte';
+	import SubmitButton from '#lib/components/ui/SubmitButton.svelte';
+	import TextField from '#lib/components/ui/TextField.svelte';
 	import { enhanceWithFeedback } from '#lib/forms/enhance-with-feedback.ts';
-	import { MIN_PASSWORD_LENGTH } from '#lib/utils/parse-profile-form.ts';
+	import { MIN_PASSWORD_LENGTH } from '#lib/domain/profile/parse-profile-form.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

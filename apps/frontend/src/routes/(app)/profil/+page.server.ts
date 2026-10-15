@@ -1,8 +1,8 @@
-import { createAuthService } from '#lib/server/services/auth.service.ts';
-import { formFailure, runBackendAction } from '#lib/server/services/run-backend-action.ts';
-import { setSessionCookies } from '#lib/server/services/session-cookies.ts';
-import { cookieSecure } from '#lib/server/services/session-runtime.ts';
-import { parsePasswordForm, parseProfileForm } from '#lib/utils/parse-profile-form.ts';
+import { createAuthService } from '#lib/server/services/auth/auth.service.ts';
+import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
+import { setSessionCookies } from '#lib/server/services/auth/session-cookies.ts';
+import { cookieSecure } from '#lib/server/services/auth/session-runtime.ts';
+import { parsePasswordForm, parseProfileForm } from '#lib/domain/profile/parse-profile-form.ts';
 import type { Actions } from './$types';
 
 export const actions: Actions = {

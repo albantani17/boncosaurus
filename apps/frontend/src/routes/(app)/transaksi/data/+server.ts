@@ -1,8 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { ApiError } from '#lib/server/api/api-error.ts';
 import { backendFor } from '#lib/server/api/backend.ts';
-import { loadTransactionPage } from '#lib/server/services/transaction-list.service.ts';
-import { readTransactionFilters } from '#lib/utils/transaction-filters.ts';
+import { loadTransactionPage } from '#lib/server/services/transaction/transaction-list.service.ts';
+import { readTransactionFilters } from '#lib/domain/transaction/transaction-filters.ts';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ locals, fetch, url }) => {

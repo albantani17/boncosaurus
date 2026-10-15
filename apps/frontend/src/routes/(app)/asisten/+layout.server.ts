@@ -1,5 +1,5 @@
 import { backendFor } from '#lib/server/api/backend.ts';
-import { loadAiProviders } from '#lib/server/services/load-ai-providers.ts';
+import { loadAiProviders } from '#lib/server/services/ai-provider/load-ai-providers.ts';
 import type { Conversation } from '#lib/types/ai.types.ts';
 import type { LayoutServerLoad } from './$types';
 

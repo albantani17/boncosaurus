@@ -1,8 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { ApiError } from '#lib/server/api/api-error.ts';
-import { setSessionCookies } from '#lib/server/services/session-cookies.ts';
-import { authServiceFor, cookieSecure } from '#lib/server/services/session-runtime.ts';
-import { validateLoginForm } from '#lib/utils/validate-login-form.ts';
+import { setSessionCookies } from '#lib/server/services/auth/session-cookies.ts';
+import { authServiceFor, cookieSecure } from '#lib/server/services/auth/session-runtime.ts';
+import { validateLoginForm } from '#lib/domain/auth/validate-login-form.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = ({ locals }) => {

@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { ApiError } from '#lib/server/api/api-error.ts';
 import { backendFor } from '#lib/server/api/backend.ts';
-import { clearSessionCookies } from '#lib/server/services/session-cookies.ts';
+import { clearSessionCookies } from '#lib/server/services/auth/session-cookies.ts';
 import type { Profile } from '#lib/types/api.types.ts';
 import type { LayoutServerLoad } from './$types';
 

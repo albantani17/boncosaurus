@@ -5,12 +5,12 @@
 	import Plus from '@lucide/svelte/icons/plus';
 	import Star from '@lucide/svelte/icons/star';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import AiProviderForm from '#lib/components/AiProviderForm.svelte';
-	import ChatPanelToggle from '#lib/components/ChatPanelToggle.svelte';
-	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
-	import Dialog from '#lib/components/Dialog.svelte';
-	import EmptyState from '#lib/components/EmptyState.svelte';
-	import FormMessage from '#lib/components/FormMessage.svelte';
+	import AiProviderForm from '#lib/components/ai-provider/AiProviderForm.svelte';
+	import ChatPanelToggle from '#lib/components/chat/ChatPanelToggle.svelte';
+	import ConfirmDialog from '#lib/components/ui/ConfirmDialog.svelte';
+	import Dialog from '#lib/components/ui/Dialog.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import FormMessage from '#lib/components/ui/FormMessage.svelte';
 	import { AI_PROVIDER_KIND_LABELS } from '#lib/data/ai-provider-presets.ts';
 	import { enhanceWithFeedback } from '#lib/forms/enhance-with-feedback.ts';
 	import type { AiProvider } from '#lib/types/ai.types.ts';

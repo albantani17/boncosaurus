@@ -1,11 +1,11 @@
 import { error, redirect } from '@sveltejs/kit';
 import { ApiError } from '#lib/server/api/api-error.ts';
 import { backendFor } from '#lib/server/api/backend.ts';
-import { formFailure, runBackendAction } from '#lib/server/services/run-backend-action.ts';
+import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
 import type { ConversationWithMessages } from '#lib/types/ai.types.ts';
 import type { Account, Category } from '#lib/types/api.types.ts';
 import { isUuid } from '#lib/utils/is-uuid.ts';
-import { parseDraftReference } from '#lib/utils/parse-draft-reference.ts';
+import { parseDraftReference } from '#lib/domain/chat/parse-draft-reference.ts';
 import { readFormText } from '#lib/utils/read-form-text.ts';
 import type { Actions, PageServerLoad } from './$types';
 

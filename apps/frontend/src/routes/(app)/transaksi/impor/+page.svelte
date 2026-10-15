@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
-	import FileField from '#lib/components/FileField.svelte';
-	import FormMessage from '#lib/components/FormMessage.svelte';
-	import ImportReview from '#lib/components/ImportReview.svelte';
-	import SubmitButton from '#lib/components/SubmitButton.svelte';
+	import FileField from '#lib/components/ui/FileField.svelte';
+	import FormMessage from '#lib/components/ui/FormMessage.svelte';
+	import ImportReview from '#lib/components/import/ImportReview.svelte';
+	import SubmitButton from '#lib/components/ui/SubmitButton.svelte';
 	import { enhanceWithFeedback } from '#lib/forms/enhance-with-feedback.ts';
 	import type { PageProps } from './$types';
 

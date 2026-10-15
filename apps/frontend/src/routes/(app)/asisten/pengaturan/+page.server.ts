@@ -1,7 +1,7 @@
 import { ApiError } from '#lib/server/api/api-error.ts';
-import { requireRecordId } from '#lib/server/services/require-record-id.ts';
-import { formFailure, runBackendAction } from '#lib/server/services/run-backend-action.ts';
-import { parseAiProviderForm } from '#lib/utils/parse-ai-provider-form.ts';
+import { requireRecordId } from '#lib/server/actions/require-record-id.ts';
+import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
+import { parseAiProviderForm } from '#lib/domain/ai-provider/parse-ai-provider-form.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ parent }) => {

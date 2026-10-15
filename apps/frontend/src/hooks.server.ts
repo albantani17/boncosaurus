@@ -4,8 +4,8 @@ import {
 	REFRESH_COOKIE,
 	clearSessionCookies,
 	setSessionCookies
-} from '#lib/server/services/session-cookies.ts';
-import { cookieSecure, refreshCoordinator } from '#lib/server/services/session-runtime.ts';
+} from '#lib/server/services/auth/session-cookies.ts';
+import { cookieSecure, refreshCoordinator } from '#lib/server/services/auth/session-runtime.ts';
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const { cookies, locals } = event;

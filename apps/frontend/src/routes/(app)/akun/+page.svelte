@@ -6,17 +6,17 @@
 	import Plus from '@lucide/svelte/icons/plus';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import Wallet from '@lucide/svelte/icons/wallet';
-	import AccountForm from '#lib/components/AccountForm.svelte';
-	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
-	import Dialog from '#lib/components/Dialog.svelte';
-	import EmptyState from '#lib/components/EmptyState.svelte';
-	import FormMessage from '#lib/components/FormMessage.svelte';
-	import StatCard from '#lib/components/StatCard.svelte';
+	import AccountForm from '#lib/components/account/AccountForm.svelte';
+	import ConfirmDialog from '#lib/components/ui/ConfirmDialog.svelte';
+	import Dialog from '#lib/components/ui/Dialog.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import FormMessage from '#lib/components/ui/FormMessage.svelte';
+	import StatCard from '#lib/components/ui/StatCard.svelte';
 	import { ACCOUNT_TYPE_LABELS } from '#lib/data/account-type-labels.ts';
 	import { enhanceWithFeedback } from '#lib/forms/enhance-with-feedback.ts';
 	import type { Account } from '#lib/types/api.types.ts';
 	import { formatCurrency } from '#lib/utils/format-currency.ts';
-	import { sumBalancesByCurrency } from '#lib/utils/sum-balances-by-currency.ts';
+	import { sumBalancesByCurrency } from '#lib/domain/account/sum-balances-by-currency.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

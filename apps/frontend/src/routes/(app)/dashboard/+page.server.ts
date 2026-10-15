@@ -1,5 +1,5 @@
 import { backendFor } from '#lib/server/api/backend.ts';
-import { loadDashboard } from '#lib/server/services/dashboard.service.ts';
+import { loadDashboard } from '#lib/server/services/dashboard/dashboard.service.ts';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, fetch, parent }) => {

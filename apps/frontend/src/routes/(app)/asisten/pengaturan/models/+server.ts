@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { ApiError } from '#lib/server/api/api-error.ts';
 import { backendFor } from '#lib/server/api/backend.ts';
-import { describeApiError } from '#lib/utils/describe-api-error.ts';
+import { describeApiError } from '#lib/domain/error/describe-api-error.ts';
 import type { RequestHandler } from './$types';
 
 const UNREACHABLE_MESSAGE = 'Server tidak dapat dihubungi. Coba lagi sebentar lagi.';

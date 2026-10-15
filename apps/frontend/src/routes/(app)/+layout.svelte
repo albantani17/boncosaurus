@@ -3,9 +3,9 @@
 	import CircleUser from '@lucide/svelte/icons/circle-user';
 	import LogOut from '@lucide/svelte/icons/log-out';
 	import Sparkles from '@lucide/svelte/icons/sparkles';
-	import AppSidebar from '#lib/components/AppSidebar.svelte';
-	import BrandMark from '#lib/components/BrandMark.svelte';
-	import MobileNav from '#lib/components/MobileNav.svelte';
+	import AppSidebar from '#lib/components/layout/AppSidebar.svelte';
+	import BrandMark from '#lib/components/layout/BrandMark.svelte';
+	import MobileNav from '#lib/components/layout/MobileNav.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { data, children }: LayoutProps = $props();

@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Settings from '@lucide/svelte/icons/settings';
-	import ChatComposer from '#lib/components/ChatComposer.svelte';
-	import ChatModelSelect from '#lib/components/ChatModelSelect.svelte';
-	import ChatShell from '#lib/components/ChatShell.svelte';
-	import ChatWelcome from '#lib/components/ChatWelcome.svelte';
-	import EmptyState from '#lib/components/EmptyState.svelte';
-	import FormMessage from '#lib/components/FormMessage.svelte';
+	import ChatComposer from '#lib/components/chat/ChatComposer.svelte';
+	import ChatModelSelect from '#lib/components/chat/ChatModelSelect.svelte';
+	import ChatShell from '#lib/components/chat/ChatShell.svelte';
+	import ChatWelcome from '#lib/components/chat/ChatWelcome.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import FormMessage from '#lib/components/ui/FormMessage.svelte';
 	import { enhanceWithFeedback } from '#lib/forms/enhance-with-feedback.ts';
-	import { setPendingChatMessage } from '#lib/services/pending-chat-message.ts';
+	import { setPendingChatMessage } from '#lib/services/chat/pending-chat-message.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

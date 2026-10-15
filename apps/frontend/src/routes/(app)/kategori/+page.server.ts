@@ -1,8 +1,8 @@
 import { backendFor } from '#lib/server/api/backend.ts';
-import { requireRecordId } from '#lib/server/services/require-record-id.ts';
-import { formFailure, runBackendAction } from '#lib/server/services/run-backend-action.ts';
+import { requireRecordId } from '#lib/server/actions/require-record-id.ts';
+import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
 import type { Category } from '#lib/types/api.types.ts';
-import { parseCategoryForm, parseCategoryRenameForm } from '#lib/utils/parse-category-form.ts';
+import { parseCategoryForm, parseCategoryRenameForm } from '#lib/domain/category/parse-category-form.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, fetch, parent }) => {

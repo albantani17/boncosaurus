@@ -1,11 +1,11 @@
 import { backendFor } from '#lib/server/api/backend.ts';
-import { requireRecordId } from '#lib/server/services/require-record-id.ts';
-import { formFailure, runBackendAction } from '#lib/server/services/run-backend-action.ts';
-import { loadTransactionPage } from '#lib/server/services/transaction-list.service.ts';
+import { requireRecordId } from '#lib/server/actions/require-record-id.ts';
+import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
+import { loadTransactionPage } from '#lib/server/services/transaction/transaction-list.service.ts';
 import type { PeriodSummary } from '#lib/types/api.types.ts';
 import { formatMonthLabel } from '#lib/utils/format-month-label.ts';
-import { parseTransactionForm } from '#lib/utils/parse-transaction-form.ts';
-import { monthRangeOf, readTransactionFilters } from '#lib/utils/transaction-filters.ts';
+import { parseTransactionForm } from '#lib/domain/transaction/parse-transaction-form.ts';
+import { monthRangeOf, readTransactionFilters } from '#lib/domain/transaction/transaction-filters.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals, fetch, parent, url }) => {

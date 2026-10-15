@@ -6,15 +6,15 @@
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import CategoryForm from '#lib/components/CategoryForm.svelte';
-	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
-	import Dialog from '#lib/components/Dialog.svelte';
-	import EmptyState from '#lib/components/EmptyState.svelte';
-	import FormMessage from '#lib/components/FormMessage.svelte';
+	import CategoryForm from '#lib/components/category/CategoryForm.svelte';
+	import ConfirmDialog from '#lib/components/ui/ConfirmDialog.svelte';
+	import Dialog from '#lib/components/ui/Dialog.svelte';
+	import EmptyState from '#lib/components/ui/EmptyState.svelte';
+	import FormMessage from '#lib/components/ui/FormMessage.svelte';
 	import { CATEGORY_TYPE_LABELS } from '#lib/data/category-type-labels.ts';
 	import { enhanceWithFeedback } from '#lib/forms/enhance-with-feedback.ts';
 	import type { Category, CategoryType } from '#lib/types/api.types.ts';
-	import { buildCategoryTree } from '#lib/utils/build-category-tree.ts';
+	import { buildCategoryTree } from '#lib/domain/category/build-category-tree.ts';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

@@ -2,8 +2,8 @@ import { redirect } from '@sveltejs/kit';
 import {
 	REFRESH_COOKIE,
 	clearSessionCookies
-} from '#lib/server/services/session-cookies.ts';
-import { authServiceFor } from '#lib/server/services/session-runtime.ts';
+} from '#lib/server/services/auth/session-cookies.ts';
+import { authServiceFor } from '#lib/server/services/auth/session-runtime.ts';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = () => {

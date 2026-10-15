@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import ChatSidebar from '#lib/components/ChatSidebar.svelte';
+	import ChatSidebar from '#lib/components/chat/ChatSidebar.svelte';
 	import { createChatPanel, setChatPanel } from '#lib/state/chat-panel.svelte.ts';
 	import type { LayoutProps } from './$types';
 

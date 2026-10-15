@@ -1,7 +1,7 @@
 import type { Account, CurrencyTotals, MascotState } from './api.types';
 import type { TransactionRowData } from './transaction-row.types';
-import type { BreakdownItem } from '../utils/build-category-breakdown';
-import type { CurrencyBalance } from '../utils/sum-balances-by-currency';
+import type { BreakdownItem } from '../domain/category/build-category-breakdown';
+import type { CurrencyBalance } from '../domain/account/sum-balances-by-currency';
 
 export type RecentTransaction = TransactionRowData & { dateLabel: string };
 
