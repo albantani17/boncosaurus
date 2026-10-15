@@ -6,8 +6,8 @@ describe('describeApiError', () => {
 		expect(describeApiError('EMAIL_TAKEN')).toBe('Email ini sudah dipakai akun lain.');
 	});
 
-	test('falls back to a generic message for unknown codes', () => {
-		expect(describeApiError('SOMETHING_NEW')).toBe('Terjadi kesalahan. Coba lagi sebentar lagi.');
+	test('falls back to a generic message when the backend sent an unknown code', () => {
+		expect(describeApiError('REQUEST_FAILED')).toBe('Terjadi kesalahan. Coba lagi sebentar lagi.');
 	});
 
 	test('prefers a context-specific override for the same code', () => {
@@ -23,6 +23,15 @@ describe('describeApiError', () => {
 	test('falls back when there is no code', () => {
 		expect(describeApiError(undefined)).toContain('Terjadi kesalahan');
 	});
+});
+
+describe('describeApiError session codes', () => {
+	test.each(['UNAUTHENTICATED', 'INVALID_REFRESH_TOKEN', 'REFRESH_TOKEN_EXPIRED', 'REFRESH_TOKEN_REUSED'] as const)(
+		'asks the user to log in again for %s',
+		(code) => {
+			expect(describeApiError(code)).toBe('Sesi berakhir. Silakan masuk lagi.');
+		}
+	);
 });
 
 describe('describeApiError import codes', () => {

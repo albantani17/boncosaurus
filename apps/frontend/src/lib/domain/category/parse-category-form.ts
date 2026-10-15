@@ -1,12 +1,8 @@
-import type { CategoryType } from '../../types/api.types';
+import { CATEGORY_TYPES, type CategoryType, type CreateCategoryBody } from '@boncosaurus/shared';
 import type { FormResult } from '../../types/form.types';
 import { readFormText } from '../../utils/read-form-text';
 
-export type CategoryInput = { name: string; type: CategoryType; parentId?: string };
-
-const CATEGORY_TYPES: CategoryType[] = ['income', 'expense'];
-
-export function parseCategoryForm(data: FormData): FormResult<CategoryInput> {
+export function parseCategoryForm(data: FormData): FormResult<CreateCategoryBody> {
 	const name = readFormText(data, 'name');
 	const type = readFormText(data, 'type') as CategoryType;
 	const parentId = readFormText(data, 'parentId');

@@ -4,7 +4,7 @@
 	import { ACCOUNT_TYPE_LABELS } from '#lib/data/account-type-labels.ts';
 	import { enhanceWithFeedback } from '#lib/forms/enhance-with-feedback.ts';
 	import type { Account } from '#lib/types/api.types.ts';
-	import { ACCOUNT_TYPES } from '#lib/domain/account/parse-account-form.ts';
+	import { ACCOUNT_TYPES } from '@boncosaurus/shared';
 	import AmountField from '../ui/AmountField.svelte';
 	import FormMessage from '../ui/FormMessage.svelte';
 	import SelectField from '../ui/SelectField.svelte';

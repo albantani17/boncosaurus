@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { ApiError } from '#lib/server/api/api-error.ts';
+import { ApiError } from '@boncosaurus/shared';
 import { setSessionCookies } from '#lib/server/services/auth/session-cookies.ts';
 import { authServiceFor, cookieSecure } from '#lib/server/services/auth/session-runtime.ts';
 import { validateLoginForm } from '#lib/domain/auth/validate-login-form.ts';

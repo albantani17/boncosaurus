@@ -1,6 +1,6 @@
 import { type ActionFailure, type RequestEvent, fail, redirect } from '@sveltejs/kit';
 import { type ErrorMessages, describeApiError } from '../../domain/error/describe-api-error';
-import { ApiError } from '../api/api-error';
+import { ApiError } from '@boncosaurus/shared';
 import { backendFor } from '../api/backend';
 import type { BackendClient } from '../api/create-backend-client';
 import { clearSessionCookies } from '../services/auth/session-cookies';

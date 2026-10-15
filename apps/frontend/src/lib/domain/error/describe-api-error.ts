@@ -1,4 +1,8 @@
-const MESSAGES: Record<string, string> = {
+import type { ApiErrorCode, ErrorCode } from '@boncosaurus/shared';
+
+const SESSION_EXPIRED = 'Sesi berakhir. Silakan masuk lagi.';
+
+const MESSAGES: Record<ErrorCode, string> = {
 	ACCOUNT_NAME_TAKEN: 'Nama akun sudah dipakai.',
 	ACCOUNT_HAS_TRANSACTIONS: 'Akun ini sudah punya transaksi.',
 	CATEGORY_NAME_TAKEN: 'Nama kategori sudah dipakai di tempat yang sama.',
@@ -30,12 +34,22 @@ const MESSAGES: Record<string, string> = {
 	IMPORT_EMPTY: 'Tidak ada transaksi yang ditemukan untuk diimpor.',
 	IMPORT_INVALID_ROW: 'Ada transaksi yang tidak valid. Periksa pemetaan akun dan kategori lalu coba lagi.',
 	AI_REQUEST_FAILED: 'AI gagal membaca file. Periksa provider di Pengaturan AI lalu coba lagi.',
-	VALIDATION_ERROR: 'Data yang dikirim tidak valid. Periksa lagi isian formulir.'
+	VALIDATION_ERROR: 'Data yang dikirim tidak valid. Periksa lagi isian formulir.',
+	UNAUTHENTICATED: SESSION_EXPIRED,
+	INVALID_REFRESH_TOKEN: SESSION_EXPIRED,
+	REFRESH_TOKEN_EXPIRED: SESSION_EXPIRED,
+	REFRESH_TOKEN_REUSED: SESSION_EXPIRED,
+	INVALID_WORKSPACE_ID: 'Workspace tidak valid.',
+	NOT_A_MEMBER: 'Kamu bukan anggota workspace ini.',
+	NO_WORKSPACE: 'Akun ini belum punya workspace.',
+	INVALID_RANGE: 'Rentang tanggal tidak valid.'
 };
 
 const FALLBACK_MESSAGE = 'Terjadi kesalahan. Coba lagi sebentar lagi.';
 
-export type ErrorMessages = Record<string, string>;
+export type ErrorMessages = Partial<Record<ErrorCode, string>>;
 
-export const describeApiError = (code: string | undefined, overrides: ErrorMessages = {}) =>
-	(code ? (overrides[code] ?? MESSAGES[code]) : undefined) ?? FALLBACK_MESSAGE;
+const isKnownCode = (code: ApiErrorCode | undefined): code is ErrorCode => code !== undefined && Object.hasOwn(MESSAGES, code);
+
+export const describeApiError = (code: ApiErrorCode | undefined, overrides: ErrorMessages = {}) =>
+	isKnownCode(code) ? (overrides[code] ?? MESSAGES[code]) : FALLBACK_MESSAGE;

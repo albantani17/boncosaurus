@@ -1,4 +1,4 @@
-import { ApiError } from './api-error';
+import { ApiError, parseApiErrorBody } from '@boncosaurus/shared';
 
 type Options = {
 	fetch: typeof fetch;
@@ -10,9 +10,8 @@ type Options = {
 type RequestOptions = { method?: string; body?: unknown; headers?: Record<string, string>; signal?: AbortSignal };
 
 async function toApiError(response: Response): Promise<ApiError> {
-	const payload = await response.json().catch(() => null);
-	const code = payload?.error?.code ?? 'REQUEST_FAILED';
-	const message = payload?.error?.message ?? `Request failed with status ${response.status}`;
+	const payload: unknown = await response.json().catch(() => null);
+	const { code, message } = parseApiErrorBody(payload, response.status);
 	return new ApiError(response.status, code, message);
 }
 
@@ -37,6 +36,9 @@ export function createBackendClient({ fetch, baseUrl, accessToken, workspaceId }
 		request,
 		async get<T>(path: string): Promise<T> {
 			return (await request(path)).json() as Promise<T>;
+		},
+		async send<T>(path: string, options: RequestOptions): Promise<T> {
+			return (await request(path, options)).json() as Promise<T>;
 		}
 	};
 }

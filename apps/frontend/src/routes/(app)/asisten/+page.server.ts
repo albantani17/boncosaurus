@@ -9,11 +9,10 @@ export const actions: Actions = {
 	new: async (event) => {
 		const providerId = readFormText(await event.request.formData(), 'providerId');
 		const outcome = await runBackendAction(event, async (client) => {
-			const response = await client.request('/chat/conversations', {
+			return client.send<Conversation>('/chat/conversations', {
 				method: 'POST',
 				body: providerId && isUuid(providerId) ? { providerId } : {}
 			});
-			return (await response.json()) as Conversation;
 		});
 		if (!outcome.ok) return outcome.failure;
 		redirect(303, `/asisten/${outcome.result.id}`);

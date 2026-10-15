@@ -1,22 +1,11 @@
-import type { TransactionType } from '../../types/api.types';
+import { TRANSACTION_TYPES, type CreateTransactionBody, type TransactionType } from '@boncosaurus/shared';
 import type { FormResult } from '../../types/form.types';
 import { parseLocalDatetime } from '../../utils/local-datetime';
 import { parseAmountInput } from '../../utils/parse-amount-input';
 import { readFormText } from '../../utils/read-form-text';
 
-export type TransactionInput = {
-	type: TransactionType;
-	accountId: string;
-	toAccountId: string | null;
-	categoryId: string | null;
-	amount: number;
-	toAmount: number | null;
-	fee: number | null;
-	occurredAt: string;
-	note: string | null;
-};
+export type TransactionInput = Required<CreateTransactionBody>;
 
-const TRANSACTION_TYPES: TransactionType[] = ['income', 'expense', 'transfer'];
 const MAX_NOTE_LENGTH = 500;
 
 export function parseTransactionForm(data: FormData, fallbackOffsetMinutes: number): FormResult<TransactionInput> {

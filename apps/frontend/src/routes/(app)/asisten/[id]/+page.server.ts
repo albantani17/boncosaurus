@@ -1,5 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
-import { ApiError } from '#lib/server/api/api-error.ts';
+import { ApiError } from '@boncosaurus/shared';
 import { backendFor } from '#lib/server/api/backend.ts';
 import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
 import type { ConversationWithMessages } from '#lib/types/ai.types.ts';

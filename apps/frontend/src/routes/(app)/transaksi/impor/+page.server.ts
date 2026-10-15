@@ -24,8 +24,7 @@ export const actions: Actions = {
 		if (!form.ok) return formFailure(form.message);
 
 		const outcome = await runBackendAction(event, async (client) => {
-			const response = await client.request('/imports/preview', { method: 'POST', body: form.value });
-			return (await response.json()) as ImportPreview;
+			return client.send<ImportPreview>('/imports/preview', { method: 'POST', body: form.value });
 		});
 		return outcome.ok ? { preview: outcome.result } : outcome.failure;
 	},
@@ -35,8 +34,7 @@ export const actions: Actions = {
 		if (!form.ok) return formFailure(form.message);
 
 		const outcome = await runBackendAction(event, async (client) => {
-			const response = await client.request('/imports/commit', { method: 'POST', body: form.value });
-			return (await response.json()) as ImportResult;
+			return client.send<ImportResult>('/imports/commit', { method: 'POST', body: form.value });
 		});
 		return outcome.ok ? { imported: outcome.result } : outcome.failure;
 	}

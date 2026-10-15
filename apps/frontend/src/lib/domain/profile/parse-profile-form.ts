@@ -1,12 +1,8 @@
+import { type ChangePasswordBody, MIN_PASSWORD_LENGTH, type UpdateProfileBody } from '@boncosaurus/shared';
 import type { FormResult } from '../../types/form.types';
 import { readFormText } from '../../utils/read-form-text';
 
-export type ProfileInput = { name: string; email: string; currentPassword?: string };
-export type PasswordInput = { currentPassword: string; newPassword: string };
-
-export const MIN_PASSWORD_LENGTH = 8;
-
-export function parseProfileForm(data: FormData): FormResult<ProfileInput> {
+export function parseProfileForm(data: FormData): FormResult<UpdateProfileBody> {
 	const name = readFormText(data, 'name');
 	const email = readFormText(data, 'email').toLowerCase();
 	const currentPassword = String(data.get('currentPassword') ?? '');
@@ -16,7 +12,7 @@ export function parseProfileForm(data: FormData): FormResult<ProfileInput> {
 	return { ok: true, value: { name, email, ...(currentPassword ? { currentPassword } : {}) } };
 }
 
-export function parsePasswordForm(data: FormData): FormResult<PasswordInput> {
+export function parsePasswordForm(data: FormData): FormResult<ChangePasswordBody> {
 	const currentPassword = String(data.get('currentPassword') ?? '');
 	const newPassword = String(data.get('newPassword') ?? '');
 	const confirmPassword = String(data.get('confirmPassword') ?? '');

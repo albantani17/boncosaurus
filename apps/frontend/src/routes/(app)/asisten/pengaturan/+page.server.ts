@@ -1,4 +1,4 @@
-import { ApiError } from '#lib/server/api/api-error.ts';
+import { ApiError } from '@boncosaurus/shared';
 import { requireRecordId } from '#lib/server/actions/require-record-id.ts';
 import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
 import { parseAiProviderForm } from '#lib/domain/ai-provider/parse-ai-provider-form.ts';

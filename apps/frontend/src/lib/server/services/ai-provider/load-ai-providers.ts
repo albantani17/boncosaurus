@@ -1,5 +1,5 @@
 import type { AiProvider } from '../../../types/ai.types';
-import { ApiError } from '../../api/api-error';
+import { ApiError } from '@boncosaurus/shared';
 import type { BackendClient } from '../../api/create-backend-client';
 
 export type AiProvidersState = { aiReady: boolean; providers: AiProvider[] };

@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { ApiError } from '#lib/server/api/api-error.ts';
+import { ApiError } from '@boncosaurus/shared';
 import { backendFor } from '#lib/server/api/backend.ts';
 import { describeApiError } from '#lib/domain/error/describe-api-error.ts';
 import type { RequestHandler } from './$types';
