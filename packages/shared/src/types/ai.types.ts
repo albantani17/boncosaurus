@@ -1,6 +1,8 @@
 import type { ChatRole } from '../constants/chat-roles';
 import type { AiProviderKind } from '../constants/ai-provider-kinds';
+import type { DebtDirection } from '../constants/debt-directions';
 import type { TransactionType } from '../constants/transaction-types';
+import type { CreateDebtBody, CreateDebtPaymentBody, TransactionSplitBody } from './debt.types';
 
 export type AiProviderDto = {
   id: string;
@@ -48,12 +50,42 @@ export type TransactionProposalDraft = {
   fee?: number | null;
   occurredAt: string;
   note: string | null;
+  /** Expenses only: shares other people owe back. */
+  splits?: TransactionSplitBody[];
 };
 
-export type TransactionProposal =
-  | { status: 'pending'; draft: TransactionProposalDraft }
-  | { status: 'saved'; draft: TransactionProposalDraft; transactionId: string }
-  | { status: 'dismissed'; draft: TransactionProposalDraft }
+/** A draft the assistant prepared; nothing is written until the user confirms it. */
+export type Proposal<Draft, Saved> =
+  | { status: 'pending'; draft: Draft }
+  | ({ status: 'saved'; draft: Draft } & Saved)
+  | { status: 'dismissed'; draft: Draft }
   | { status: 'invalid'; code: string; message: string };
+
+export type TransactionProposal = Proposal<TransactionProposalDraft, { transactionId: string }>;
+
+export type DebtProposalDraft = CreateDebtBody;
+export type DebtProposal = Proposal<DebtProposalDraft, { debtId: string }>;
+
+/** The payment plus what the card shows: whose debt it is and how it splits. */
+export type DebtPaymentProposalDraft = CreateDebtPaymentBody & {
+  debtId: string;
+  debtTitle: string;
+  counterpartyName: string;
+  direction: DebtDirection;
+  currency: string;
+  principalAmount: number;
+  extraAmount: number;
+};
+export type DebtPaymentProposal = Proposal<DebtPaymentProposalDraft, { debtId: string }>;
+
+export type DebtWriteOffProposalDraft = {
+  debtId: string;
+  debtTitle: string;
+  counterpartyName: string;
+  direction: DebtDirection;
+  currency: string;
+  amount: number;
+};
+export type DebtWriteOffProposal = Proposal<DebtWriteOffProposalDraft, { debtId: string }>;
 
 export type DraftReferenceBody = { messageId: string; toolCallId: string };
