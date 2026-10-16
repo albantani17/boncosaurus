@@ -1,9 +1,20 @@
 import { sql } from 'drizzle-orm';
-import { check, foreignKey, index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  check,
+  foreignKey,
+  index,
+  type PgTableExtraConfigValue,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid
+} from 'drizzle-orm/pg-core';
 import { accounts } from './accounts';
 import { categories } from './categories';
 import { money, timestamps, uuidV7Pk } from './columns';
-import { transactionSource, transactionType } from './enums';
+import { debts } from './debts';
+import { debtTransactionRole, transactionSource, transactionType } from './enums';
 import { users } from './users';
 import { workspaces } from './workspaces';
 
@@ -24,11 +35,14 @@ export const transactions = pgTable(
     occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
     note: text('note'),
     source: transactionSource('source').notNull().default('manual'),
+    debtId: uuid('debt_id'),
+    debtRole: debtTransactionRole('debt_role'),
     createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     ...timestamps()
   },
-  (table) => [
+  (table): PgTableExtraConfigValue[] => [
+    unique('transactions_workspace_id_unique').on(table.workspaceId, table.id),
     foreignKey({
       name: 'transactions_account_fk',
       columns: [table.workspaceId, table.accountId],
@@ -44,6 +58,16 @@ export const transactions = pgTable(
       columns: [table.workspaceId, table.categoryId],
       foreignColumns: [categories.workspaceId, categories.id]
     }),
+    foreignKey({
+      name: 'transactions_debt_fk',
+      columns: [table.workspaceId, table.debtId],
+      foreignColumns: [debts.workspaceId, debts.id]
+    }),
+    check('transactions_debt_link', sql`(${table.debtId} IS NULL) = (${table.debtRole} IS NULL)`),
+    check(
+      'transactions_debt_principal_shape',
+      sql`${table.debtRole} IS DISTINCT FROM 'principal' OR (${table.type} <> 'transfer' AND ${table.categoryId} IS NULL)`
+    ),
     check('transactions_amount_positive', sql`${table.amount} > 0`),
     check(
       'transactions_to_amount_positive',
@@ -61,6 +85,7 @@ export const transactions = pgTable(
     ),
     index('transactions_workspace_occurred_idx').on(table.workspaceId, table.occurredAt.desc()),
     index('transactions_account_idx').on(table.accountId),
-    index('transactions_category_idx').on(table.categoryId)
+    index('transactions_category_idx').on(table.categoryId),
+    index('transactions_debt_idx').on(table.debtId)
   ]
 );
