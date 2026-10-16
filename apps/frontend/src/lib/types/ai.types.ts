@@ -3,6 +3,12 @@ export type {
 	AiProviderKind,
 	ConversationDto as Conversation,
 	ConversationWithMessages,
+	DebtPaymentProposal,
+	DebtPaymentProposalDraft,
+	DebtProposal,
+	DebtProposalDraft,
+	DebtWriteOffProposal,
+	DebtWriteOffProposalDraft,
 	StoredChatMessage,
 	TransactionProposal,
 	TransactionProposalDraft

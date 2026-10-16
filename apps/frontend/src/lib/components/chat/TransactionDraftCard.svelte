@@ -1,14 +1,11 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import Check from '@lucide/svelte/icons/check';
 	import CircleAlert from '@lucide/svelte/icons/circle-alert';
-	import X from '@lucide/svelte/icons/x';
 	import { TRANSACTION_TYPE_DISPLAY } from '#lib/data/transaction-type-display.ts';
-	import { enhanceWithFeedback } from '#lib/forms/enhance-with-feedback.ts';
 	import type { TransactionProposal } from '#lib/types/ai.types.ts';
 	import type { Account, Category } from '#lib/types/api.types.ts';
 	import { describeTransactionProposal } from '#lib/domain/chat/describe-transaction-proposal.ts';
-	import FormMessage from '../ui/FormMessage.svelte';
+	import { formatCurrency } from '#lib/utils/format-currency.ts';
+	import DraftActions from './DraftActions.svelte';
 
 	type Props = {
 		proposal: TransactionProposal;
@@ -22,19 +19,10 @@
 
 	let { proposal, messageId, toolCallId, accounts, categories, interactive, onResolved }: Props = $props();
 
-	let pending = $state<'confirm' | 'dismiss' | null>(null);
-	let error = $state('');
-
 	const draft = $derived(proposal.status === 'invalid' ? null : proposal.draft);
 	const summary = $derived(draft ? describeTransactionProposal(draft, accounts, categories) : null);
 	const display = $derived(draft ? TRANSACTION_TYPE_DISPLAY[draft.type] : null);
-
-	const feedback = (action: 'confirm' | 'dismiss', status: 'saved' | 'dismissed') =>
-		enhanceWithFeedback({
-			onPending: (value) => (pending = value ? action : null),
-			onSuccess: () => onResolved(status),
-			onFailure: (message) => (error = message)
-		});
+	const currency = $derived(accounts.find((account) => account.id === draft?.accountId)?.currency);
 </script>
 
 {#if proposal.status === 'invalid'}
@@ -75,45 +63,20 @@
 				<dt class="text-sage-400">Catatan</dt>
 				<dd class="break-words text-beige-100">{draft.note}</dd>
 			{/if}
+			{#each draft.splits ?? [] as split (split.counterpartyName)}
+				<dt class="text-sage-400">Bagian</dt>
+				<dd class="text-beige-100">{split.counterpartyName} · {formatCurrency(split.amount, currency)} (piutang)</dd>
+			{/each}
 		</dl>
 
-		{#if error}<FormMessage message={error} />{/if}
-
-		{#if proposal.status === 'saved'}
-			<p class="flex items-center gap-2 text-sm font-medium text-dino-400">
-				<Check class="size-4" aria-hidden="true" /> Tersimpan.
-				<a href="/transaksi" class="font-normal text-sage-300 underline hover:text-beige-100">Lihat transaksi</a>
-			</p>
-		{:else if proposal.status === 'dismissed'}
-			<p class="flex items-center gap-2 text-sm text-sage-400"><X class="size-4" aria-hidden="true" /> Diabaikan.</p>
-		{:else if interactive}
-			<div class="flex gap-2">
-				<form method="POST" action="?/confirmDraft" class="flex-1" use:enhance={feedback('confirm', 'saved')}>
-					<input type="hidden" name="messageId" value={messageId} />
-					<input type="hidden" name="toolCallId" value={toolCallId} />
-					<button
-						type="submit"
-						disabled={pending !== null}
-						class="flex h-11 w-full items-center justify-center gap-2 rounded-control bg-dino-400 text-sm font-semibold text-forest-950 hover:brightness-110 disabled:opacity-60"
-					>
-						<Check class="size-4" aria-hidden="true" />
-						{pending === 'confirm' ? 'Menyimpan…' : 'Simpan'}
-					</button>
-				</form>
-				<form method="POST" action="?/dismissDraft" use:enhance={feedback('dismiss', 'dismissed')}>
-					<input type="hidden" name="messageId" value={messageId} />
-					<input type="hidden" name="toolCallId" value={toolCallId} />
-					<button
-						type="submit"
-						disabled={pending !== null}
-						class="flex h-11 items-center justify-center gap-2 rounded-control border border-forest-600 px-4 text-sm font-medium hover:bg-forest-800 disabled:opacity-60"
-					>
-						Abaikan
-					</button>
-				</form>
-			</div>
-		{:else}
-			<p class="text-xs text-sage-400">Menunggu jawaban selesai…</p>
-		{/if}
+		<DraftActions
+			status={proposal.status}
+			{messageId}
+			{toolCallId}
+			{interactive}
+			savedHref={draft.splits?.length ? '/hutang?arah=piutang' : '/transaksi'}
+			savedLabel={draft.splits?.length ? 'Lihat piutang' : 'Lihat transaksi'}
+			{onResolved}
+		/>
 	</div>
 {/if}

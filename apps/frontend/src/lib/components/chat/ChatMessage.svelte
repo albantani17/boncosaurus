@@ -4,13 +4,19 @@
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import type { UIMessage } from 'ai';
 	import { CHAT_TOOL_LABELS } from '#lib/data/chat-tool-labels.ts';
-	import type { TransactionProposal } from '#lib/types/ai.types.ts';
+	import type { DebtPaymentProposal, DebtProposal, DebtWriteOffProposal, TransactionProposal } from '#lib/types/ai.types.ts';
 	import type { Account, Category } from '#lib/types/api.types.ts';
 	import { getToolPartName } from '#lib/domain/chat/get-tool-part-name.ts';
 	import ChatMarkdown from './ChatMarkdown.svelte';
+	import DebtDraftCard from './DebtDraftCard.svelte';
 	import TransactionDraftCard from './TransactionDraftCard.svelte';
 
 	type ToolPart = { type: string; toolCallId: string; state: string; output?: unknown; errorText?: string };
+
+	const DEBT_PROPOSAL_TOOLS = ['proposeDebt', 'proposeDebtPayment', 'proposeDebtWriteOff'] as const;
+	type DebtProposalTool = (typeof DEBT_PROPOSAL_TOOLS)[number];
+	const isDebtProposalTool = (name: string | null): name is DebtProposalTool =>
+		(DEBT_PROPOSAL_TOOLS as readonly (string | null)[]).includes(name);
 
 	type Props = {
 		message: UIMessage;
@@ -67,6 +73,18 @@
 					{@const toolPart = part as ToolPart}
 					<TransactionDraftCard
 						proposal={toolPart.output as TransactionProposal}
+						messageId={message.id}
+						toolCallId={toolPart.toolCallId}
+						{accounts}
+						{categories}
+						{interactive}
+						onResolved={(status) => onProposalResolved(toolPart.toolCallId, status)}
+					/>
+				{:else if isDebtProposalTool(toolName) && (part as ToolPart).state === 'output-available'}
+					{@const toolPart = part as ToolPart}
+					<DebtDraftCard
+						{toolName}
+						proposal={toolPart.output as DebtProposal | DebtPaymentProposal | DebtWriteOffProposal}
 						messageId={message.id}
 						toolCallId={toolPart.toolCallId}
 						{accounts}
