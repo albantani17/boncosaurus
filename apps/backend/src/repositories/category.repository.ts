@@ -1,6 +1,6 @@
 import { and, asc, count, eq } from 'drizzle-orm';
 import { db } from '../db';
-import { categories, transactions } from '../db/schema';
+import { categories, debts, transactions } from '../db/schema';
 import type { Category, CategoryPatch, NewCategory } from '../types/finance.types';
 
 export type CategoryRepository = {
@@ -55,11 +55,18 @@ export const categoryRepository: CategoryRepository = {
     return row?.total ?? 0;
   },
 
+  // Purchases on credit reference a category too, so they keep it in use like transactions.
   async countTransactions(workspaceId, id) {
-    const [row] = await db
-      .select({ total: count() })
-      .from(transactions)
-      .where(and(eq(transactions.workspaceId, workspaceId), eq(transactions.categoryId, id)));
-    return row?.total ?? 0;
+    const [[transactionRow], [debtRow]] = await Promise.all([
+      db
+        .select({ total: count() })
+        .from(transactions)
+        .where(and(eq(transactions.workspaceId, workspaceId), eq(transactions.categoryId, id))),
+      db
+        .select({ total: count() })
+        .from(debts)
+        .where(and(eq(debts.workspaceId, workspaceId), eq(debts.categoryId, id)))
+    ]);
+    return (transactionRow?.total ?? 0) + (debtRow?.total ?? 0);
   }
 };

@@ -6,8 +6,9 @@ import {
   type UpdateAccountBody
 } from '@boncosaurus/shared';
 import { type Static, t } from 'elysia';
+import { unionEnum } from './union-enum.schema';
 
-const accountType = t.UnionEnum(ACCOUNT_TYPES);
+const accountType = unionEnum(ACCOUNT_TYPES);
 const currency = t.String({ pattern: '^[A-Z]{3}$' });
 const name = t.String({ minLength: 1, maxLength: 100 });
 

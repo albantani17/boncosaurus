@@ -7,13 +7,23 @@ import {
   type UpdateTransactionBody
 } from '@boncosaurus/shared';
 import { type Static, t } from 'elysia';
+import { unionEnum } from './union-enum.schema';
+import { counterpartyRef, debtTitle, nullableCalendarDate } from './debt-fields.schema';
 
-const transactionType = t.UnionEnum(TRANSACTION_TYPES);
+const transactionType = unionEnum(TRANSACTION_TYPES);
 const uuid = t.String({ format: 'uuid' });
 const nullableUuid = t.Union([uuid, t.Null()]);
 const amount = t.Integer({ minimum: 1 });
 const nullableAmount = t.Union([amount, t.Null()]);
 const note = t.Union([t.String({ maxLength: 500 }), t.Null()]);
+const MAX_SPLITS = 20;
+
+const split = t.Object({
+  ...counterpartyRef,
+  amount,
+  title: t.Optional(t.Union([debtTitle, t.Null()])),
+  dueDate: t.Optional(nullableCalendarDate)
+});
 
 export const createTransactionBody = t.Object({
   type: transactionType,
@@ -24,7 +34,8 @@ export const createTransactionBody = t.Object({
   toAmount: t.Optional(nullableAmount),
   fee: t.Optional(nullableAmount),
   occurredAt: t.Date(),
-  note: t.Optional(note)
+  note: t.Optional(note),
+  splits: t.Optional(t.Array(split, { maxItems: MAX_SPLITS }))
 });
 
 export const updateTransactionBody = t.Object({

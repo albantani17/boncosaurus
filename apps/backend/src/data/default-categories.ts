@@ -8,9 +8,11 @@ export const defaultCategories: DefaultCategory[] = [
   { name: 'Kesehatan', type: 'expense' },
   { name: 'Hiburan', type: 'expense' },
   { name: 'Pendidikan', type: 'expense' },
+  { name: 'Bunga & Biaya', type: 'expense' },
   { name: 'Lainnya', type: 'expense' },
   { name: 'Gaji', type: 'income' },
   { name: 'Bonus', type: 'income' },
   { name: 'Investasi', type: 'income' },
+  { name: 'Bunga diterima', type: 'income' },
   { name: 'Pemasukan lain', type: 'income' }
 ];

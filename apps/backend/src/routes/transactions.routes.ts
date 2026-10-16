@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia';
-import { transactionService } from '../container';
+import { splitExpenseService, transactionService } from '../container';
 import { workspacePlugin } from '../plugins/workspace.plugin';
 import { idParams } from '../schemas/id-params.schema';
 import {
@@ -17,9 +17,12 @@ export const transactionRoutes = new Elysia({ prefix: '/transactions' })
   )
   .post(
     '/',
-    async ({ workspaceId, userId, body, set }) => {
+    async ({ workspaceId, userId, body: { splits, ...body }, set }) => {
       set.status = 201;
-      return transactionService.createTransaction(workspaceId, { ...body, createdBy: userId });
+      const input = { ...body, createdBy: userId };
+      return splits?.length
+        ? splitExpenseService.createSplitExpense(workspaceId, { ...input, splits })
+        : transactionService.createTransaction(workspaceId, input);
     },
     { body: createTransactionBody }
   )

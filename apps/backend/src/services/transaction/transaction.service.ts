@@ -1,6 +1,7 @@
 import { NotFoundError } from '../../errors/app-error';
 import type { AccountRepository } from '../../repositories/account.repository';
 import type { CategoryRepository } from '../../repositories/category.repository';
+import type { DebtRepository } from '../../repositories/debt.repository';
 import type { TransactionRepository } from '../../repositories/transaction.repository';
 import type {
   NewTransaction,
@@ -9,6 +10,10 @@ import type {
   TransactionPatch
 } from '../../types/finance.types';
 import { mergeDefined } from '../../utils/merge-defined';
+import {
+  assertTransactionDeletable,
+  assertTransactionEditable
+} from '../../domain/debt/assert-transaction-editable';
 import {
   type TransactionDraft,
   type TransactionReferences,
@@ -27,9 +32,10 @@ type Dependencies = {
   transactions: TransactionRepository;
   accounts: Pick<AccountRepository, 'findById'>;
   categories: Pick<CategoryRepository, 'findById'>;
+  debts: Pick<DebtRepository, 'sumSplitsForTransaction'>;
 };
 
-export function createTransactionService({ transactions, accounts, categories }: Dependencies) {
+export function createTransactionService({ transactions, accounts, categories, debts }: Dependencies) {
   async function resolveReferences(
     workspaceId: string,
     draft: TransactionDraft
@@ -69,6 +75,16 @@ export function createTransactionService({ transactions, accounts, categories }:
     return transaction;
   }
 
+  const canHaveSplits = (transaction: Transaction) => transaction.type === 'expense' && transaction.debtRole === null;
+
+  const sumSplits = async (workspaceId: string, transaction: Transaction) =>
+    canHaveSplits(transaction) ? debts.sumSplitsForTransaction(workspaceId, transaction.id) : 0;
+
+  async function currencyOf(workspaceId: string, accountId: string, known: { id: string; currency: string }) {
+    if (accountId === known.id) return known.currency;
+    return (await accounts.findById(workspaceId, accountId))?.currency ?? known.currency;
+  }
+
   return {
     listTransactions: (workspaceId: string, filters: TransactionFilters) =>
       transactions.list(workspaceId, filters),
@@ -101,6 +117,11 @@ export function createTransactionService({ transactions, accounts, categories }:
         existing.categoryId === merged.categoryId ? existing.categoryId : null
       ].filter((id): id is string => id !== null);
       validateTransaction(merged, references, { allowArchivedIds: unchangedReferenceIds });
+      assertTransactionEditable(existing, merged, patch, {
+        splitTotal: await sumSplits(workspaceId, existing),
+        currencyBefore: await currencyOf(workspaceId, existing.accountId, references.account),
+        currencyAfter: references.account.currency
+      });
 
       const updated = await transactions.update(workspaceId, id, patch);
       if (!updated) throw new NotFoundError('Transaction');
@@ -108,8 +129,12 @@ export function createTransactionService({ transactions, accounts, categories }:
     },
 
     async deleteTransaction(workspaceId: string, id: string): Promise<void> {
+      const existing = await requireTransaction(workspaceId, id);
+      assertTransactionDeletable(existing, await sumSplits(workspaceId, existing));
       const deleted = await transactions.softDelete(workspaceId, id);
       if (!deleted) throw new NotFoundError('Transaction');
     }
   };
 }
+
+export type TransactionService = ReturnType<typeof createTransactionService>;

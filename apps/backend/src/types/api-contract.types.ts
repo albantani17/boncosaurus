@@ -5,6 +5,11 @@ import type {
   CategoryDto,
   ConversationDto,
   ConversationWithMessages as ConversationWithMessagesDto,
+  CounterpartyDto,
+  DebtDetailDto,
+  DebtDto,
+  DebtReminderDto,
+  DebtSummaryDto,
   IsAssignable,
   Jsonify,
   PeriodSummaryDto,
@@ -14,7 +19,11 @@ import type {
 import type { AccountWithBalance } from '../services/account/account.service';
 import type { Profile } from '../services/auth/auth.service';
 import type { ConversationWithMessages } from '../services/chat/chat.service';
+import type { DebtDetail, DebtView } from '../domain/debt/build-debt-view';
+import type { DebtSummary } from '../domain/debt/summarize-debts';
+import type { DebtReminder } from '../domain/debt/select-due-reminders';
 import type { ChatConversation, PublicAiProvider } from './ai.types';
+import type { Counterparty } from './debt.types';
 import type { Category, Transaction } from './finance.types';
 import type { PeriodSummary } from './report.types';
 
@@ -29,5 +38,10 @@ export type ApiResponseContracts = [
   Assert<Serves<Profile, ProfileDto>>,
   Assert<Serves<PublicAiProvider, AiProviderDto>>,
   Assert<Serves<ChatConversation, ConversationDto>>,
-  Assert<Serves<ConversationWithMessages, ConversationWithMessagesDto>>
+  Assert<Serves<ConversationWithMessages, ConversationWithMessagesDto>>,
+  Assert<Serves<Counterparty, CounterpartyDto>>,
+  Assert<Serves<DebtView, DebtDto>>,
+  Assert<Serves<DebtDetail, DebtDetailDto>>,
+  Assert<Serves<DebtSummary, DebtSummaryDto>>,
+  Assert<Serves<DebtReminder, DebtReminderDto>>
 ];

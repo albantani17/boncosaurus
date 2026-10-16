@@ -44,6 +44,8 @@ const makeTransaction = (overrides: Partial<Transaction> = {}): Transaction => (
   note: null,
   source: 'manual',
   createdBy: null,
+  debtId: null,
+  debtRole: null,
   deletedAt: null,
   createdAt: now,
   updatedAt: now,
@@ -56,9 +58,10 @@ const setup = (
     categories?: Category[];
     existing?: Transaction;
     softDeleteResult?: boolean;
+    splitTotal?: number;
   } = {}
 ) => {
-  const { accounts = [makeAccount()], categories = [], existing, softDeleteResult = true } = options;
+  const { accounts = [makeAccount()], categories = [], existing, softDeleteResult = true, splitTotal = 0 } = options;
   const inserted: unknown[] = [];
   const updates: unknown[] = [];
   const listCalls: unknown[] = [];
@@ -81,7 +84,8 @@ const setup = (
   const service = createTransactionService({
     transactions,
     accounts: { findById: async (_ws, id) => accounts.find((account) => account.id === id) },
-    categories: { findById: async (_ws, id) => categories.find((category) => category.id === id) }
+    categories: { findById: async (_ws, id) => categories.find((category) => category.id === id) },
+    debts: { sumSplitsForTransaction: async () => splitTotal }
   });
   return { service, inserted, updates, listCalls };
 };
@@ -236,14 +240,94 @@ describe('updateTransaction', () => {
 
 describe('deleteTransaction', () => {
   test('soft deletes an existing transaction', async () => {
-    const { service } = setup();
+    const { service } = setup({ existing: makeTransaction() });
 
     await expect(service.deleteTransaction('ws', 'tx-1')).resolves.toBeUndefined();
   });
 
-  test('throws not found when nothing was deleted', async () => {
-    const { service } = setup({ softDeleteResult: false });
+  test('throws not found when the transaction does not exist', async () => {
+    const { service } = setup();
 
     await expect(service.deleteTransaction('ws', 'x')).rejects.toMatchObject({ status: 404 });
+  });
+
+  test('throws not found when nothing was deleted', async () => {
+    const { service } = setup({ existing: makeTransaction(), softDeleteResult: false });
+
+    await expect(service.deleteTransaction('ws', 'tx-1')).rejects.toMatchObject({ status: 404 });
+  });
+
+  test('refuses to delete a debt transaction', async () => {
+    const { service } = setup({ existing: makeTransaction({ debtId: 'debt', debtRole: 'principal' }) });
+
+    await expect(service.deleteTransaction('ws', 'tx-1')).rejects.toMatchObject({ code: 'DEBT_TRANSACTION_LOCKED' });
+  });
+
+  test('refuses to delete an expense that others still owe part of', async () => {
+    const { service } = setup({ existing: makeTransaction(), splitTotal: 500 });
+
+    await expect(service.deleteTransaction('ws', 'tx-1')).rejects.toMatchObject({ code: 'DEBT_TRANSACTION_LOCKED' });
+  });
+});
+
+describe('updateTransaction with debts', () => {
+  test('allows editing the note of a debt transaction', async () => {
+    const { service, updates } = setup({ existing: makeTransaction({ debtId: 'debt', debtRole: 'principal' }) });
+
+    await service.updateTransaction('ws', 'tx-1', { note: 'cicilan 1' });
+
+    expect(updates).toEqual([{ note: 'cicilan 1' }]);
+  });
+
+  test('locks the amount of a debt transaction', async () => {
+    const { service } = setup({ existing: makeTransaction({ debtId: 'debt', debtRole: 'charge' }) });
+
+    await expect(service.updateTransaction('ws', 'tx-1', { amount: 5 })).rejects.toMatchObject({
+      code: 'DEBT_TRANSACTION_LOCKED'
+    });
+  });
+
+  test('rejects lowering a split expense below the shares owed', async () => {
+    const { service } = setup({ existing: makeTransaction(), splitTotal: 800 });
+
+    await expect(service.updateTransaction('ws', 'tx-1', { amount: 700 })).rejects.toMatchObject({
+      code: 'DEBT_SPLIT_EXCEEDS_TRANSACTION'
+    });
+  });
+
+  test('rejects moving a split expense to an account in another currency', async () => {
+    const { service } = setup({
+      accounts: [makeAccount(), makeAccount({ id: 'acc-usd', currency: 'USD' })],
+      existing: makeTransaction(),
+      splitTotal: 800
+    });
+
+    await expect(service.updateTransaction('ws', 'tx-1', { accountId: 'acc-usd' })).rejects.toMatchObject({
+      code: 'CURRENCY_MISMATCH'
+    });
+  });
+
+  test('allows moving a split expense to another account in the same currency', async () => {
+    const { service, updates } = setup({
+      accounts: [makeAccount(), makeAccount({ id: 'acc-2' })],
+      existing: makeTransaction(),
+      splitTotal: 800
+    });
+
+    await service.updateTransaction('ws', 'tx-1', { accountId: 'acc-2' });
+
+    expect(updates).toEqual([{ accountId: 'acc-2' }]);
+  });
+
+  test('falls back to the new currency when the old account is gone', async () => {
+    const { service, updates } = setup({
+      accounts: [makeAccount({ id: 'acc-2' })],
+      existing: makeTransaction(),
+      splitTotal: 800
+    });
+
+    await service.updateTransaction('ws', 'tx-1', { accountId: 'acc-2' });
+
+    expect(updates).toEqual([{ accountId: 'acc-2' }]);
   });
 });

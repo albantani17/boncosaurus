@@ -6,9 +6,10 @@ import {
   type IsMutuallyAssignable
 } from '@boncosaurus/shared';
 import { type Static, t } from 'elysia';
+import { unionEnum } from './union-enum.schema';
 
-const transactionType = t.UnionEnum(CATEGORY_TYPES);
-const accountType = t.UnionEnum(ACCOUNT_TYPES);
+const transactionType = unionEnum(CATEGORY_TYPES);
+const accountType = unionEnum(ACCOUNT_TYPES);
 const uuid = t.String({ format: 'uuid' });
 const name = t.String({ minLength: 1, maxLength: 100 });
 

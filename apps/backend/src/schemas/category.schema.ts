@@ -6,8 +6,9 @@ import {
   type UpdateCategoryBody
 } from '@boncosaurus/shared';
 import { type Static, t } from 'elysia';
+import { unionEnum } from './union-enum.schema';
 
-const categoryType = t.UnionEnum(CATEGORY_TYPES);
+const categoryType = unionEnum(CATEGORY_TYPES);
 const name = t.String({ minLength: 1, maxLength: 100 });
 const icon = t.Union([t.String({ maxLength: 50 }), t.Null()]);
 const color = t.Union([t.String({ maxLength: 20 }), t.Null()]);
