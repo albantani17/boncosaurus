@@ -85,6 +85,18 @@ Every request goes through these layers: `routes/` → `services/` → `reposito
 
 `GET /reports/summary?from&to` returns income/expense totals per currency plus per-category totals for the range. Transfers are excluded and currencies are never mixed (currency comes from the transaction's account). The one exception is a transfer's optional `fee` (admin fee, transfers only, in the source account currency): it reduces the source balance (`amount + fee`) and is counted as an uncategorized expense (`domain/report/add-transfer-fees.ts`).
 
+### Debts (hutang & piutang)
+
+- Tables: `counterparties` (a person or a provider, unique per workspace by `lower(name)`), `debts`, `debt_installments`, `debt_payments`. `transactions` has `debtId` + `debtRole` (`principal` | `charge`).
+- `debts.origin` decides how money moved: `cash` (a disbursement transaction with `debtRole: 'principal'`), `split` (receivable share of an existing expense, `originTransactionId`; created via `POST /transactions` with `splits`), `purchase` (payable with a `categoryId`, nothing moved: paylater, a friend paid).
+- Reports exclude `principal` transactions. `domain/report/build-debt-adjustments.ts` subtracts split shares from their expense category, adds credit purchases to their category, and books write-offs (receivable → expense, payable → income).
+- A payment is split by `domain/debt/split-payment.ts`: up to the remaining principal is a `principal` repayment, the rest is a categorized `charge` (overpayment, or interest when installments add up to more than the principal). `resolve-settlement.ts` settles/reopens the debt.
+- Debt transactions are locked in `/transactions` except for the note, and a split expense can't drop below its shares (`domain/debt/assert-transaction-editable.ts`). Edit them from `/hutang/[id]`.
+- Schemas use `unionEnum` (`schemas/union-enum.schema.ts`), not `t.UnionEnum`: Elysia's default would fill omitted optional enum fields with the first value.
+- Reminders: `debts.reminderDays` (default 3 for products, 0 for personal; `domain/debt/default-reminder-days.ts`). `GET /debts/reminders` returns active debts whose `position.nextDueDate` is within the window or past (`select-due-reminders.ts`). "Today" uses the backend process `TZ`. The frontend `(app)` layout loads them for the bell (`ReminderBell.svelte`) and the dashboard.
+- Web Push: off unless `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` are set (`config/parse-push-config.ts`). Subscriptions live in `push_subscriptions` (per user + workspace); `index.ts` runs `reminderDigestService.runDigest()` every 15 min, which sends one digest per user/workspace/day from `REMINDER_HOUR`, deduplicated by `reminder_digests`. Expired subscriptions (404/410) are deleted. The browser side is `src/service-worker.ts` plus `lib/services/push/browser-push.ts`, set up from Profil and proxied through `profil/notifikasi/+server.ts`.
+- AI chat debt tools (`services/chat/debt-chat-tools.ts`): `listDebts`, `getDebtSummary`, `getDebt`, `proposeDebt`, `proposeDebtPayment`, `proposeDebtWriteOff`; `proposeTransaction` accepts `splits`. Proposals are validated through the services' `preview*` methods; `domain/chat/proposal-parts.ts` finds any proposal tool part and `services/chat/proposal-actions.ts` saves a confirmed draft.
+
 ### AI chat
 
 - Built on the Vercel AI SDK v7 (`ai`, `@ai-sdk/*`). v7 names differ from older docs: `instructions` (not `system`), `isStepCount`, `toUIMessageStream` + `createUIMessageStreamResponse` with `onEnd`, `createGoogle`.
