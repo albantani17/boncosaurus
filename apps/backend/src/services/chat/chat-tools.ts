@@ -1,14 +1,16 @@
 import { tool } from 'ai';
 import { z } from 'zod';
-import { AppError } from '../../errors/app-error';
 import type { TransactionProposal, TransactionProposalDraft } from '../../types/ai.types';
 import type { Category, Transaction, TransactionFilters } from '../../types/finance.types';
 import type { PeriodSummary } from '../../types/report.types';
 import { parseToolDate } from '../../domain/chat/parse-tool-date';
 import type { AccountWithBalance } from '../account/account.service';
+import type { SplitExpenseService } from '../debt/split-expense.service';
 import type { CreateTransactionInput } from '../transaction/transaction.service';
+import { createDebtChatTools, type DebtChatToolDependencies } from './debt-chat-tools';
+import { toInvalidProposal } from './to-invalid-proposal';
 
-export type ChatToolDependencies = {
+export type ChatToolDependencies = DebtChatToolDependencies & {
   reports: { getSummary(workspaceId: string, range: { from: Date; to: Date }): Promise<PeriodSummary> };
   accounts: { listAccounts(workspaceId: string): Promise<AccountWithBalance[]> };
   categories: { listCategories(workspaceId: string): Promise<Category[]> };
@@ -16,11 +18,13 @@ export type ChatToolDependencies = {
     listTransactions(workspaceId: string, filters: TransactionFilters): Promise<Transaction[]>;
     previewTransaction(workspaceId: string, input: CreateTransactionInput): Promise<void>;
   };
+  splitExpenses: Pick<SplitExpenseService, 'previewSplitExpense'>;
 };
 
 export const PROPOSE_TRANSACTION_TOOL = 'proposeTransaction';
 
 const MAX_SEARCH_RESULTS = 50;
+const MAX_SPLITS = 20;
 const DATE_HINT = 'ISO 8601 datetime with offset, e.g. 2026-10-01T00:00:00+07:00';
 
 const transactionType = z.enum(['income', 'expense', 'transfer']);
@@ -40,6 +44,8 @@ export function createChatTools(deps: ChatToolDependencies, workspaceId: string)
   }
 
   return {
+    ...createDebtChatTools(deps, workspaceId),
+
     getSummary: tool({
       description:
         'Income and expense totals per currency plus totals per category for a date range (both ends inclusive). Transfers are excluded.',
@@ -137,7 +143,8 @@ export function createChatTools(deps: ChatToolDependencies, workspaceId: string)
       description:
         'Prepare a new transaction for the user to confirm. Nothing is saved until the user confirms it in the app. ' +
         'Use account and category ids from the context. Transfers need toAccountId and no category; ' +
-        'toAmount is only for transfers between accounts with different currencies. fee is an optional admin fee for transfers.',
+        'toAmount is only for transfers between accounts with different currencies. fee is an optional admin fee for transfers. ' +
+        'splits (expenses only): shares of this expense other people owe the user back, e.g. a meal the user paid for friends.',
       inputSchema: z.object({
         type: transactionType,
         accountId: z.string(),
@@ -147,7 +154,11 @@ export function createChatTools(deps: ChatToolDependencies, workspaceId: string)
         toAmount: z.number().int().positive().nullish(),
         fee: z.number().int().positive().nullish().describe('Transfer admin fee in the source account currency; transfers only'),
         occurredAt: isoDate,
-        note: z.string().max(500).nullish()
+        note: z.string().max(500).nullish(),
+        splits: z
+          .array(z.object({ counterpartyName: z.string().min(1).max(100), amount: z.number().int().positive() }))
+          .max(MAX_SPLITS)
+          .nullish()
       }),
       execute: async (input): Promise<TransactionProposal> => {
         const occurredAt = parseToolDate(input.occurredAt);
@@ -162,13 +173,15 @@ export function createChatTools(deps: ChatToolDependencies, workspaceId: string)
           toAmount: input.toAmount ?? null,
           fee: input.fee ?? null,
           occurredAt: occurredAt.toISOString(),
-          note: input.note?.trim() || null
+          note: input.note?.trim() || null,
+          ...(input.splits?.length ? { splits: input.splits } : {})
         };
         try {
-          await deps.transactions.previewTransaction(workspaceId, { ...draft, occurredAt });
+          const { splits, ...transaction } = { ...draft, occurredAt };
+          if (splits) await deps.splitExpenses.previewSplitExpense(workspaceId, { ...transaction, splits });
+          else await deps.transactions.previewTransaction(workspaceId, transaction);
         } catch (error) {
-          if (error instanceof AppError) return { status: 'invalid', code: error.code, message: error.message };
-          throw error;
+          return toInvalidProposal(error);
         }
         return { status: 'pending', draft };
       }

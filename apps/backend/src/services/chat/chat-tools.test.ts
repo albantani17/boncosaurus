@@ -49,13 +49,24 @@ const transaction: Transaction = {
   note: 'Kopi',
   source: 'manual',
   createdBy: null,
+  debtId: null,
+  debtRole: null,
   deletedAt: null,
   createdAt: now,
   updatedAt: now
 };
 
+const notCalled = async (): Promise<never> => {
+  throw new Error('not expected in these tests');
+};
+
 function setup(preview: (input: CreateTransactionInput) => Promise<void> = async () => {}) {
-  const calls = { summary: [] as unknown[], list: [] as TransactionFilters[], preview: [] as CreateTransactionInput[] };
+  const calls = {
+    summary: [] as unknown[],
+    list: [] as TransactionFilters[],
+    preview: [] as CreateTransactionInput[],
+    splitPreview: [] as unknown[]
+  };
   const deps: ChatToolDependencies = {
     reports: {
       getSummary: async (_ws, range) => {
@@ -78,7 +89,15 @@ function setup(preview: (input: CreateTransactionInput) => Promise<void> = async
         calls.preview.push(input);
         await preview(input);
       }
-    }
+    },
+    splitExpenses: {
+      previewSplitExpense: async (_ws, input) => {
+        calls.splitPreview.push(input);
+        await preview(input);
+      }
+    },
+    debts: { listDebts: notCalled, getDebt: notCalled, getSummary: notCalled, previewDebt: notCalled },
+    debtPayments: { previewPayment: notCalled, previewWriteOff: notCalled }
   };
   return { tools: createChatTools(deps, 'ws'), calls };
 }
@@ -226,5 +245,39 @@ describe('proposeTransaction', () => {
 
     expect(result).toMatchObject({ status: 'invalid', code: 'INVALID_DATE' });
     expect(calls.preview).toEqual([]);
+  });
+});
+
+describe('proposeTransaction with splits', () => {
+  test('previews an expense shared with others through the split service', async () => {
+    const { tools, calls } = setup();
+
+    const result = await tools.proposeTransaction.execute!(
+      {
+        type: 'expense',
+        accountId: 'acc-1',
+        categoryId: 'cat-1',
+        amount: 100_000,
+        occurredAt: '2026-10-14T12:00:00+07:00',
+        splits: [{ counterpartyName: 'Hani', amount: 60_000 }]
+      },
+      options
+    );
+
+    expect(result).toMatchObject({ status: 'pending', draft: { splits: [{ counterpartyName: 'Hani', amount: 60_000 }] } });
+    expect(calls.preview).toEqual([]);
+    expect(calls.splitPreview).toEqual([expect.objectContaining({ amount: 100_000, splits: [{ counterpartyName: 'Hani', amount: 60_000 }] })]);
+  });
+
+  test('leaves splits out of a draft that has none', async () => {
+    const { tools } = setup();
+
+    const result = await tools.proposeTransaction.execute!(
+      { type: 'expense', accountId: 'acc-1', amount: 1, occurredAt: '2026-10-14T12:00:00+07:00', splits: [] },
+      options
+    );
+
+    expect(result).toMatchObject({ status: 'pending' });
+    expect((result as { draft: object }).draft).not.toHaveProperty('splits');
   });
 });

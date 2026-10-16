@@ -11,19 +11,18 @@ import {
 import { BadRequestError, ConflictError, ForbiddenError, NotFoundError } from '../../errors/app-error';
 import type { ChatRepository } from '../../repositories/chat.repository';
 import type { WorkspaceRepository } from '../../repositories/workspace.repository';
-import type { ChatConversation, ChatMessageRecord, TransactionProposal } from '../../types/ai.types';
-import type { Transaction } from '../../types/finance.types';
+import type { ChatConversation, ChatMessageRecord } from '../../types/ai.types';
 import type { ServiceLogger } from '../../types/logger.types';
 import { buildChatSystemPrompt } from '../../domain/chat/build-chat-system-prompt';
 import type { LanguageModelSettings } from '../../integrations/ai/create-language-model';
 import { deriveConversationTitle } from '../../domain/chat/derive-conversation-title';
 import { describeProviderError } from '../../integrations/ai/describe-provider-error';
 import { describeZonedNow } from '../../utils/describe-zoned-now';
-import { findProposal, replaceProposal } from '../../domain/chat/proposal-parts';
+import { type AnyProposal, findProposal, replaceProposal, savedRecordOf } from '../../domain/chat/proposal-parts';
 import { toUserTextParts } from '../../domain/chat/to-user-text-parts';
 import type { ActorContext, AiProviderService } from '../ai-provider/ai-provider.service';
 import { type ChatToolDependencies, createChatTools } from './chat-tools';
-import type { CreateTransactionInput } from '../transaction/transaction.service';
+import type { ProposalActions } from './proposal-actions';
 
 export type ChatMessage = Pick<ChatMessageRecord, 'id' | 'role' | 'parts' | 'createdAt'>;
 export type ConversationWithMessages = ChatConversation & { messages: ChatMessage[] };
@@ -36,9 +35,7 @@ type Dependencies = {
   providers: Pick<AiProviderService, 'resolveProvider'>;
   workspaces: Pick<WorkspaceRepository, 'listForUser'>;
   tools: ChatToolDependencies;
-  transactions: {
-    createTransaction(workspaceId: string, input: CreateTransactionInput): Promise<Transaction>;
-  };
+  proposals: Pick<ProposalActions, 'save'>;
   createModel: (settings: LanguageModelSettings) => LanguageModel;
   generateId: () => string;
   now: () => Date;
@@ -95,16 +92,16 @@ export function createChatService(deps: Dependencies) {
   async function requireProposal(actor: ActorContext, conversationId: string, draft: DraftReference) {
     await requireConversation(actor, conversationId);
     const message = await chats.findMessage(actor.workspaceId, conversationId, draft.messageId);
-    const proposal = message ? findProposal(message.parts, draft.toolCallId) : null;
-    if (!message || !proposal) throw new NotFoundError('Draft');
-    return { message, proposal };
+    const stored = message ? findProposal(message.parts, draft.toolCallId) : null;
+    if (!message || !stored) throw new NotFoundError('Draft');
+    return { message, ...stored };
   }
 
-  async function storeProposal(message: ChatMessageRecord, toolCallId: string, proposal: TransactionProposal) {
+  async function storeProposal(message: ChatMessageRecord, toolCallId: string, proposal: AnyProposal) {
     await chats.saveMessage({ ...message, parts: replaceProposal(message.parts, toolCallId, proposal) });
   }
 
-  // One confirmation per draft at a time, so a double click cannot create two transactions.
+  // One confirmation per draft at a time, so a double click cannot save a draft twice.
   async function withDraftLock<T>(key: string, run: () => Promise<T>): Promise<T> {
     while (draftLocks.has(key)) await draftLocks.get(key)!.catch(() => undefined);
     const running = run();
@@ -212,24 +209,15 @@ export function createChatService(deps: Dependencies) {
 
     confirmDraft(actor: ActorContext, conversationId: string, draft: DraftReference) {
       return withDraftLock(`${draft.messageId}:${draft.toolCallId}`, async () => {
-        const { message, proposal } = await requireProposal(actor, conversationId, draft);
-        if (proposal.status === 'saved') return { transactionId: proposal.transactionId };
+        const { message, toolName, proposal } = await requireProposal(actor, conversationId, draft);
+        if (proposal.status === 'saved') return savedRecordOf(proposal);
         if (proposal.status !== 'pending') {
           throw new ConflictError('DRAFT_NOT_PENDING', 'This draft can no longer be saved');
         }
 
-        const transaction = await deps.transactions.createTransaction(actor.workspaceId, {
-          ...proposal.draft,
-          occurredAt: new Date(proposal.draft.occurredAt),
-          source: 'ai',
-          createdBy: actor.userId
-        });
-        await storeProposal(message, draft.toolCallId, {
-          status: 'saved',
-          draft: proposal.draft,
-          transactionId: transaction.id
-        });
-        return { transactionId: transaction.id };
+        const record = await deps.proposals.save(actor, toolName, proposal.draft);
+        await storeProposal(message, draft.toolCallId, { status: 'saved', draft: proposal.draft, ...record } as AnyProposal);
+        return record;
       });
     },
 
@@ -240,7 +228,7 @@ export function createChatService(deps: Dependencies) {
         if (proposal.status !== 'pending') {
           throw new ConflictError('DRAFT_NOT_PENDING', 'This draft can no longer be dismissed');
         }
-        await storeProposal(message, draft.toolCallId, { status: 'dismissed', draft: proposal.draft });
+        await storeProposal(message, draft.toolCallId, { status: 'dismissed', draft: proposal.draft } as AnyProposal);
       });
     }
   };

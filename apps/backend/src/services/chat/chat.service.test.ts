@@ -8,6 +8,7 @@ import { findProposal } from '../../domain/chat/proposal-parts';
 import type { AccountWithBalance } from '../account/account.service';
 import { createRecordingLogger } from '../../integrations/logging/create-recording-logger';
 import { createChatService } from './chat.service';
+import { createProposalActions } from './proposal-actions';
 import type { CreateTransactionInput } from '../transaction/transaction.service';
 
 const now = new Date('2026-10-14T08:00:00Z');
@@ -110,6 +111,19 @@ const textMessage = (id: string, role: 'user' | 'assistant', text: string): Chat
   createdAt: now
 });
 
+const notCalled = async (): Promise<never> => {
+  throw new Error('not expected in these tests');
+};
+const unusedDebtTools = {
+  debts: { listDebts: notCalled, getDebt: notCalled, getSummary: notCalled, previewDebt: notCalled },
+  debtPayments: { previewPayment: notCalled, previewWriteOff: notCalled }
+};
+const unusedProposalTargets = {
+  splitExpenses: { createSplitExpense: notCalled },
+  debts: { createDebt: notCalled },
+  debtPayments: { recordPayment: notCalled, writeOff: notCalled }
+};
+
 function setup({
   conversations = [makeConversation()],
   messages = [] as ChatMessageRecord[],
@@ -167,15 +181,21 @@ function setup({
       reports: { getSummary: async (_ws, range) => ({ ...range, totals: [], byCategory: [] }) },
       accounts: { listAccounts: async () => [account] },
       categories: { listCategories: async () => [category, { ...category, id: 'cat-old', name: 'Rokok', isArchived: true }] },
-      transactions: { listTransactions: async () => [], previewTransaction: async () => {} }
+      transactions: { listTransactions: async () => [], previewTransaction: async () => {} },
+      splitExpenses: { previewSplitExpense: async () => {} },
+      debts: unusedDebtTools.debts,
+      debtPayments: unusedDebtTools.debtPayments
     },
-    transactions: {
-      createTransaction: async (_ws, input) => {
-        created.push(input);
-        await Bun.sleep(1);
-        return { id: `tx-${created.length}` } as Transaction;
-      }
-    },
+    proposals: createProposalActions({
+      transactions: {
+        createTransaction: async (_ws, input) => {
+          created.push(input);
+          await Bun.sleep(1);
+          return { id: `tx-${created.length}` } as Transaction;
+        }
+      },
+      ...unusedProposalTargets
+    }),
     createModel: () => model,
     generateId: () => `id-${nextId++}`,
     now: () => now,
@@ -308,7 +328,7 @@ describe('confirmDraft', () => {
     expect(result).toEqual({ transactionId: 'tx-1' });
     expect(created[0]).toMatchObject({ amount: 25_000, source: 'ai', createdBy: 'u1' });
     expect(created[0]?.occurredAt).toEqual(new Date(draft.occurredAt));
-    expect(findProposal(state.messages[0]!.parts, 'call-1')).toEqual({ status: 'saved', draft, transactionId: 'tx-1' });
+    expect(findProposal(state.messages[0]!.parts, 'call-1')?.proposal).toEqual({ status: 'saved', draft, transactionId: 'tx-1' });
   });
 
   test('is idempotent, even for concurrent confirmations', async () => {
@@ -345,7 +365,7 @@ describe('dismissDraft', () => {
 
     await service.dismissDraft(actor, 'conv-1', { messageId: 'msg-a', toolCallId: 'call-1' });
 
-    expect(findProposal(state.messages[0]!.parts, 'call-1')).toEqual({ status: 'dismissed', draft });
+    expect(findProposal(state.messages[0]!.parts, 'call-1')?.proposal).toEqual({ status: 'dismissed', draft });
     expect(created).toEqual([]);
   });
 
@@ -354,7 +374,7 @@ describe('dismissDraft', () => {
 
     await service.dismissDraft(actor, 'conv-1', { messageId: 'msg-a', toolCallId: 'call-1' });
 
-    expect(findProposal(state.messages[0]!.parts, 'call-1')).toEqual({ status: 'dismissed', draft });
+    expect(findProposal(state.messages[0]!.parts, 'call-1')?.proposal).toEqual({ status: 'dismissed', draft });
   });
 
   test('refuses a draft that was already saved', async () => {

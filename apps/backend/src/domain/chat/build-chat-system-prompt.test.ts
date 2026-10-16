@@ -30,4 +30,11 @@ describe('buildChatSystemPrompt', () => {
     const prompt = buildChatSystemPrompt({ ...base, accounts: [], categories: [] });
     expect(prompt).toContain('Akun:\n- (belum ada)');
   });
+
+  test('explains when to use each debt tool', () => {
+    const prompt = buildChatSystemPrompt(base);
+    expect(prompt).toContain('proposeTransaction type "expense" dengan splits');
+    expect(prompt).toContain('lalu proposeDebtPayment');
+    expect(prompt).toContain('proposeDebtWriteOff');
+  });
 });

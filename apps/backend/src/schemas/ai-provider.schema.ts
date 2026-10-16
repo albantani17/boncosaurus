@@ -6,8 +6,9 @@ import {
   type UpdateAiProviderBody
 } from '@boncosaurus/shared';
 import { type Static, t } from 'elysia';
+import { unionEnum } from './union-enum.schema';
 
-const kind = t.UnionEnum(AI_PROVIDER_KINDS);
+const kind = unionEnum(AI_PROVIDER_KINDS);
 const name = t.String({ minLength: 1, maxLength: 100 });
 const model = t.String({ minLength: 1, maxLength: 200 });
 const baseUrl = t.Union([t.String({ maxLength: 500 }), t.Null()]);
