@@ -3,7 +3,18 @@ import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-a
 import { setSessionCookies } from '#lib/server/services/auth/session-cookies.ts';
 import { cookieSecure } from '#lib/server/services/auth/session-runtime.ts';
 import { parsePasswordForm, parseProfileForm } from '#lib/domain/profile/parse-profile-form.ts';
-import type { Actions } from './$types';
+import { backendFor } from '#lib/server/api/backend.ts';
+import type { PushConfig } from '#lib/types/api.types.ts';
+import type { Actions, PageServerLoad } from './$types';
+
+const PUSH_OFF: PushConfig = { enabled: false, publicKey: null };
+
+export const load: PageServerLoad = async ({ locals, fetch }) => {
+	const pushConfig = await backendFor(fetch, { accessToken: locals.accessToken })
+		.get<PushConfig>('/push/config')
+		.catch(() => PUSH_OFF);
+	return { pushConfig };
+};
 
 export const actions: Actions = {
 	profile: async (event) => {

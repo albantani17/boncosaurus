@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { untrack } from 'svelte';
+	import PushSettings from '#lib/components/profile/PushSettings.svelte';
 	import FormMessage from '#lib/components/ui/FormMessage.svelte';
 	import PasswordField from '#lib/components/ui/PasswordField.svelte';
 	import SubmitButton from '#lib/components/ui/SubmitButton.svelte';
@@ -109,3 +110,5 @@
 		</form>
 	</section>
 </div>
+
+<PushSettings config={data.pushConfig} />
