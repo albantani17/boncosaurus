@@ -5,7 +5,7 @@
 		label: string;
 		name: string;
 		id?: string;
-		type?: 'text' | 'email' | 'month' | 'datetime-local';
+		type?: 'text' | 'email' | 'month' | 'date' | 'datetime-local';
 		value?: string;
 		autocomplete?: 'username' | 'email' | 'name' | 'off';
 		inputmode?: 'text' | 'numeric' | 'email';
@@ -15,6 +15,7 @@
 		invalid?: boolean;
 		describedBy?: string;
 		hint?: string;
+		list?: string;
 	};
 
 	let {
@@ -30,7 +31,8 @@
 		required = true,
 		invalid = false,
 		describedBy,
-		hint
+		hint,
+		list
 	}: Props = $props();
 
 	const hintId = $derived(hint ? `${id}-hint` : undefined);
@@ -50,6 +52,7 @@
 		{inputmode}
 		{placeholder}
 		{maxlength}
+		{list}
 		{required}
 		aria-invalid={invalid}
 		aria-describedby={[describedBy, hintId].filter(Boolean).join(' ') || undefined}

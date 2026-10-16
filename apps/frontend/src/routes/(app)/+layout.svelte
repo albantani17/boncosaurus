@@ -5,6 +5,7 @@
 	import Sparkles from '@lucide/svelte/icons/sparkles';
 	import AppSidebar from '#lib/components/layout/AppSidebar.svelte';
 	import BrandMark from '#lib/components/layout/BrandMark.svelte';
+	import ReminderBell from '#lib/components/debt/ReminderBell.svelte';
 	import MobileNav from '#lib/components/layout/MobileNav.svelte';
 	import type { LayoutProps } from './$types';
 
@@ -15,12 +16,13 @@
 </script>
 
 <div class="min-h-dvh md:flex">
-	<AppSidebar user={data.user} workspaceName={data.workspace.name} />
+	<AppSidebar user={data.user} workspaceName={data.workspace.name} reminders={data.reminders} />
 
 	<div class="min-w-0 flex-1">
 		<header class="flex h-14 items-center justify-between border-b border-forest-600 bg-forest-900 px-4 md:hidden">
 			<BrandMark />
 			<div class="flex items-center gap-1">
+			<ReminderBell reminders={data.reminders} />
 			<a
 				href="/asisten"
 				aria-label="Asisten AI"

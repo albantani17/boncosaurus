@@ -18,6 +18,7 @@ const row = (overrides: Partial<TransactionRowData>): TransactionRowData => ({
 	categoryName: null,
 	note: null,
 	occurredAt: '2026-10-14T01:00:00.000Z',
+	debtId: null,
 	...overrides
 });
 

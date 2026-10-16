@@ -6,6 +6,8 @@
 	import Wallet from '@lucide/svelte/icons/wallet';
 	import AccountList from '#lib/components/account/AccountList.svelte';
 	import CategoryBreakdown from '#lib/components/dashboard/CategoryBreakdown.svelte';
+	import DebtSummaryCard from '#lib/components/dashboard/DebtSummaryCard.svelte';
+	import DebtReminderList from '#lib/components/debt/DebtReminderList.svelte';
 	import DinoSprite from '#lib/components/mascot/DinoSprite.svelte';
 	import EmptyState from '#lib/components/ui/EmptyState.svelte';
 	import ForestBanner from '#lib/components/mascot/ForestBanner.svelte';
@@ -86,6 +88,18 @@
 		tone={net < 0 ? 'expense' : net > 0 ? 'income' : 'neutral'}
 	/>
 </section>
+
+{#if data.reminders.length > 0}
+	<section aria-labelledby="reminders-heading" class="flex flex-col gap-2 rounded-card border border-amber-400/50 bg-forest-900 p-5">
+		<h2 id="reminders-heading" class="text-base font-semibold">Segera jatuh tempo</h2>
+		<DebtReminderList reminders={data.reminders.slice(0, 3)} />
+		{#if data.reminders.length > 3}
+			<a href="/hutang" class="text-sm text-sage-300 underline hover:text-beige-100">+{data.reminders.length - 3} lainnya</a>
+		{/if}
+	</section>
+{/if}
+
+<DebtSummaryCard debts={dashboard.debts} {currency} />
 
 {#if dashboard.otherCurrencyTotals.length > 0}
 	<p class="text-xs text-sage-400">

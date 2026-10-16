@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HandCoins from '@lucide/svelte/icons/hand-coins';
 	import { TRANSACTION_TYPE_DISPLAY } from '#lib/data/transaction-type-display.ts';
 	import type { TransactionRowData } from '#lib/types/transaction-row.types.ts';
 	import { describeTransactionTitle } from '#lib/domain/transaction/describe-transaction-title.ts';
@@ -23,7 +24,13 @@
 		<display.icon class="size-4" aria-hidden="true" />
 	</span>
 	<span class="min-w-0 flex-1">
-		<span class="block truncate text-sm text-beige-100">{description}</span>
+		<span class="flex items-center gap-1.5 text-sm text-beige-100">
+			<span class="truncate">{description}</span>
+			{#if row.debtId}
+				<HandCoins class="size-3.5 shrink-0 text-sage-400" aria-hidden="true" />
+				<span class="sr-only">(hutang/piutang)</span>
+			{/if}
+		</span>
 		<span class="block truncate text-xs text-sage-400"><span class="sr-only">{display.label}, </span>{meta}</span>
 	</span>
 	<span class="shrink-0 text-right">

@@ -4,7 +4,7 @@ import { parseLocalDatetime } from '../../utils/local-datetime';
 import { parseAmountInput } from '../../utils/parse-amount-input';
 import { readFormText } from '../../utils/read-form-text';
 
-export type TransactionInput = Required<CreateTransactionBody>;
+export type TransactionInput = Required<Omit<CreateTransactionBody, 'splits'>>;
 
 const MAX_NOTE_LENGTH = 500;
 

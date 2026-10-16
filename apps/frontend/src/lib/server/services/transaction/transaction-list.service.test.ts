@@ -13,7 +13,9 @@ const transaction = (id: number): Transaction => ({
 	toAmount: null,
 	fee: null,
 	occurredAt: '2026-10-14T01:00:00.000Z',
-	note: null
+	note: null,
+	debtId: null,
+	debtRole: null
 });
 
 const setup = (transactionCount: number, lists: { accounts?: Account[]; categories?: Category[] } = {}) => {

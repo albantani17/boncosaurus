@@ -43,7 +43,19 @@ const MESSAGES: Record<ErrorCode, string> = {
 	INVALID_WORKSPACE_ID: 'Workspace tidak valid.',
 	NOT_A_MEMBER: 'Kamu bukan anggota workspace ini.',
 	NO_WORKSPACE: 'Akun ini belum punya workspace.',
-	INVALID_RANGE: 'Rentang tanggal tidak valid.'
+	INVALID_RANGE: 'Rentang tanggal tidak valid.',
+	COUNTERPARTY_NAME_TAKEN: 'Nama orang atau penyedia ini sudah ada.',
+	COUNTERPARTY_IN_USE: 'Orang atau penyedia ini masih punya catatan hutang/piutang. Arsipkan saja.',
+	COUNTERPARTY_REQUIRED: 'Isi nama orang atau penyedia pinjamannya.',
+	INVALID_DEBT_ORIGIN: 'Asal hutang tidak cocok. Periksa akun, kategori, atau transaksi asalnya.',
+	INVALID_SCHEDULE: 'Jadwal cicilan tidak valid. Total cicilan minimal sebesar pokok.',
+	DEBT_ALREADY_CLOSED: 'Hutang/piutang ini sudah selesai.',
+	DEBT_HAS_PAYMENTS: 'Pokok tidak bisa diubah karena sudah ada pembayaran.',
+	DEBT_SPLIT_EXCEEDS_TRANSACTION: 'Bagian orang lain melebihi jumlah transaksinya.',
+	DEBT_TRANSACTION_LOCKED: 'Transaksi ini terhubung ke hutang/piutang. Ubah atau hapus lewat halaman Hutang.',
+	CURRENCY_MISMATCH: 'Mata uang akun harus sama dengan mata uang hutang/piutangnya.',
+	PUSH_NOT_CONFIGURED: 'Notifikasi browser belum aktif di server. Isi VAPID_PUBLIC_KEY dan VAPID_PRIVATE_KEY lalu mulai ulang backend.',
+	PUSH_SEND_FAILED: 'Notifikasi gagal dikirim ke perangkat ini. Coba nonaktifkan lalu aktifkan lagi.'
 };
 
 const FALLBACK_MESSAGE = 'Terjadi kesalahan. Coba lagi sebentar lagi.';

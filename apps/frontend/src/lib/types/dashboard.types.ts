@@ -15,4 +15,6 @@ export type DashboardData = {
 	accounts: Account[];
 	recentTransactions: RecentTransaction[];
 	mascot: MascotState;
+	/** Remaining debts in the base currency. */
+	debts: { payable: number; receivable: number; activeCount: number; overdueCount: number };
 };

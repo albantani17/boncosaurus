@@ -3,7 +3,7 @@
 	import { untrack } from 'svelte';
 	import { TRANSACTION_TYPE_DISPLAY } from '#lib/data/transaction-type-display.ts';
 	import { enhanceWithFeedback } from '#lib/forms/enhance-with-feedback.ts';
-	import type { Account, Category, TransactionType } from '#lib/types/api.types.ts';
+	import type { Account, Category, Counterparty, TransactionType } from '#lib/types/api.types.ts';
 	import type { TransactionRowData } from '#lib/types/transaction-row.types.ts';
 	import { buildCategoryTree } from '#lib/domain/category/build-category-tree.ts';
 	import { toDatetimeInputValue } from '#lib/utils/local-datetime.ts';
@@ -12,10 +12,17 @@
 	import SelectField from '../ui/SelectField.svelte';
 	import SubmitButton from '../ui/SubmitButton.svelte';
 	import TextField from '../ui/TextField.svelte';
+	import SplitFields from './SplitFields.svelte';
 
-	type Props = { row?: TransactionRowData; accounts: Account[]; categories: Category[]; onDone: () => void };
+	type Props = {
+		row?: TransactionRowData;
+		accounts: Account[];
+		categories: Category[];
+		counterparties?: Counterparty[];
+		onDone: (message?: string) => void;
+	};
 
-	let { row, accounts, categories, onDone }: Props = $props();
+	let { row, accounts, categories, counterparties = [], onDone }: Props = $props();
 
 	const TYPES: TransactionType[] = ['expense', 'income', 'transfer'];
 
@@ -130,6 +137,10 @@
 
 	<TextField label="Tanggal & waktu" name="occurredAt" type="datetime-local" bind:value={occurredAt} />
 	<TextField label="Catatan" name="note" bind:value={note} maxlength={500} required={false} autocomplete="off" />
+
+	{#if !initial && type === 'expense'}
+		<SplitFields {amount} currency={fromCurrency} {counterparties} />
+	{/if}
 
 	<SubmitButton {pending}>{initial ? 'Simpan perubahan' : 'Simpan transaksi'}</SubmitButton>
 </form>

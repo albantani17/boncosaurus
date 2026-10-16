@@ -69,6 +69,10 @@
 		formOpen = true;
 	};
 	const openEdit = (row: TransactionRowData) => {
+		if (row.debtId) {
+			goto(`/hutang/${row.debtId}`);
+			return;
+		}
 		editing = row;
 		formOpen = true;
 	};
@@ -254,7 +258,8 @@
 			row={editing}
 			accounts={data.accounts}
 			categories={data.categories}
-			onDone={() => finish(editing ? 'Transaksi disimpan.' : 'Transaksi dicatat.')}
+			counterparties={data.counterparties}
+			onDone={(message) => finish(message ?? (editing ? 'Transaksi disimpan.' : 'Transaksi dicatat.'))}
 		/>
 	{/if}
 	{#if editing}

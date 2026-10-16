@@ -2,8 +2,9 @@ import { backendFor } from '#lib/server/api/backend.ts';
 import { requireRecordId } from '#lib/server/actions/require-record-id.ts';
 import { formFailure, runBackendAction } from '#lib/server/actions/run-backend-action.ts';
 import { loadTransactionPage } from '#lib/server/services/transaction/transaction-list.service.ts';
-import type { PeriodSummary } from '#lib/types/api.types.ts';
+import type { Counterparty, PeriodSummary } from '#lib/types/api.types.ts';
 import { formatMonthLabel } from '#lib/utils/format-month-label.ts';
+import { parseSplitRows } from '#lib/domain/debt/parse-split-rows.ts';
 import { parseTransactionForm } from '#lib/domain/transaction/parse-transaction-form.ts';
 import { monthRangeOf, readTransactionFilters } from '#lib/domain/transaction/transaction-filters.ts';
 import type { Actions, PageServerLoad } from './$types';
@@ -15,9 +16,10 @@ export const load: PageServerLoad = async ({ locals, fetch, parent, url }) => {
 	const { from, to } = monthRangeOf(filters.month);
 	const summaryQuery = new URLSearchParams({ from: from.toISOString(), to: to.toISOString() });
 
-	const [page, summary] = await Promise.all([
+	const [page, summary, counterparties] = await Promise.all([
 		loadTransactionPage(client, filters, 0),
-		client.get<PeriodSummary>(`/reports/summary?${summaryQuery}`)
+		client.get<PeriodSummary>(`/reports/summary?${summaryQuery}`),
+		client.get<Counterparty[]>('/counterparties')
 	]);
 	const monthTotals = summary.totals.find((totals) => totals.currency === workspace.baseCurrency) ?? {
 		currency: workspace.baseCurrency,
@@ -26,20 +28,23 @@ export const load: PageServerLoad = async ({ locals, fetch, parent, url }) => {
 		net: 0
 	};
 
-	return { ...page, filters, monthTotals, monthLabel: formatMonthLabel(from) };
+	return { ...page, counterparties, filters, monthTotals, monthLabel: formatMonthLabel(from) };
 };
 
 const parseForm = (data: FormData) => parseTransactionForm(data, new Date().getTimezoneOffset());
 
 export const actions: Actions = {
 	create: async (event) => {
-		const form = parseForm(await event.request.formData());
+		const data = await event.request.formData();
+		const form = parseForm(data);
 		if (!form.ok) return formFailure(form.message);
+		const splits = form.value.type === 'expense' ? parseSplitRows(data, form.value.amount) : { ok: true as const, value: [] };
+		if (!splits.ok) return formFailure(splits.message);
 
-		const outcome = await runBackendAction(event, (client) =>
-			client.request('/transactions', { method: 'POST', body: form.value })
-		);
-		return outcome.ok ? { message: 'Transaksi dicatat.' } : outcome.failure;
+		const body = splits.value.length > 0 ? { ...form.value, splits: splits.value } : form.value;
+		const outcome = await runBackendAction(event, (client) => client.request('/transactions', { method: 'POST', body }));
+		if (!outcome.ok) return outcome.failure;
+		return { message: splits.value.length > 0 ? 'Transaksi dan piutangnya dicatat.' : 'Transaksi dicatat.' };
 	},
 
 	update: async (event) => {

@@ -3,13 +3,14 @@
 	import CircleUser from '@lucide/svelte/icons/circle-user';
 	import LogOut from '@lucide/svelte/icons/log-out';
 	import { NAV_ITEMS } from '#lib/data/nav-items.ts';
-	import type { PublicUser } from '#lib/types/api.types.ts';
+	import type { DebtReminder, PublicUser } from '#lib/types/api.types.ts';
+	import ReminderBell from '../debt/ReminderBell.svelte';
 	import { isNavItemActive } from '#lib/domain/navigation/is-nav-item-active.ts';
 	import BrandMark from './BrandMark.svelte';
 
-	type Props = { user: PublicUser; workspaceName: string };
+	type Props = { user: PublicUser; workspaceName: string; reminders: DebtReminder[] };
 
-	let { user, workspaceName }: Props = $props();
+	let { user, workspaceName, reminders }: Props = $props();
 
 	const profileActive = $derived(isNavItemActive(page.url.pathname, '/profil'));
 
@@ -22,10 +23,13 @@
 <aside
 	class="sticky top-0 hidden h-dvh flex-col gap-6 border-r border-forest-600 bg-forest-900 px-3 py-5 md:flex md:w-16 lg:w-60 lg:px-4"
 >
-	<a href="/dashboard" class="flex justify-center px-1 lg:justify-start" aria-label="Boncosaurus">
-		<span class="lg:hidden"><BrandMark showName={false} /></span>
-		<span class="hidden lg:block"><BrandMark /></span>
-	</a>
+	<div class="flex flex-col items-center gap-2 lg:flex-row lg:justify-between">
+		<a href="/dashboard" class="flex justify-center px-1 lg:justify-start" aria-label="Boncosaurus">
+			<span class="lg:hidden"><BrandMark showName={false} /></span>
+			<span class="hidden lg:block"><BrandMark /></span>
+		</a>
+		<ReminderBell {reminders} />
+	</div>
 
 	<nav aria-label="Navigasi utama" class="flex flex-1 flex-col gap-1">
 		{#each NAV_ITEMS as item (item.href)}

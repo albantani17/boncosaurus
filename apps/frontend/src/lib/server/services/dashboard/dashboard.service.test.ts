@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { Account, Category, PeriodSummary, Transaction } from '../../../types/api.types';
+import type { Account, Category, DebtSummary, PeriodSummary, Transaction } from '../../../types/api.types';
 import { loadDashboard } from './dashboard.service';
 
 const now = new Date(2026, 9, 14, 12, 0);
@@ -24,16 +24,22 @@ const transaction: Transaction = {
 	toAmount: null,
 	fee: null,
 	occurredAt: new Date(2026, 9, 13, 8).toISOString(),
-	note: 'sarapan'
+	note: 'sarapan',
+	debtId: null,
+	debtRole: null
 };
 
-const setup = (summary: Partial<PeriodSummary> = {}, overrides: { accounts?: Account[] } = {}) => {
+const setup = (
+	summary: Partial<PeriodSummary> = {},
+	overrides: { accounts?: Account[]; debtSummary?: DebtSummary } = {}
+) => {
 	const paths: string[] = [];
 	const responses: Record<string, unknown> = {
 		'/accounts': overrides.accounts ?? [account],
 		'/categories': [category],
 		'/reports/summary': { from: '', to: '', totals: [], byCategory: [], ...summary },
-		'/transactions': [transaction]
+		'/transactions': [transaction],
+		'/debts/summary': overrides.debtSummary ?? { totals: [], activeCount: 0, overdueCount: 0 }
 	};
 	const client = {
 		get: async <T>(path: string) => {
@@ -110,5 +116,33 @@ describe('loadDashboard', () => {
 		const data = await loadDashboard({ client, baseCurrency: 'IDR', now });
 
 		expect(data.breakdown).toEqual([{ label: 'Makanan', total: 100, percent: 100 }]);
+	});
+
+	test('shows what remains on debts in the base currency', async () => {
+		const { client } = setup(
+			{},
+			{
+				debtSummary: {
+					totals: [
+						{ currency: 'USD', payable: 5, receivable: 0 },
+						{ currency: 'IDR', payable: 210_000, receivable: 38_000 }
+					],
+					activeCount: 4,
+					overdueCount: 1
+				}
+			}
+		);
+
+		const data = await loadDashboard({ client, baseCurrency: 'IDR', now });
+
+		expect(data.debts).toEqual({ payable: 210_000, receivable: 38_000, activeCount: 4, overdueCount: 1 });
+	});
+
+	test('shows zero debts when none are in the base currency', async () => {
+		const { client } = setup();
+
+		const data = await loadDashboard({ client, baseCurrency: 'IDR', now });
+
+		expect(data.debts).toEqual({ payable: 0, receivable: 0, activeCount: 0, overdueCount: 0 });
 	});
 });

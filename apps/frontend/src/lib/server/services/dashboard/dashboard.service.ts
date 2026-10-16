@@ -1,4 +1,4 @@
-import type { Account, Category, PeriodSummary, Transaction } from '../../../types/api.types';
+import type { Account, Category, DebtSummary, PeriodSummary, Transaction } from '../../../types/api.types';
 import type { DashboardData } from '../../../types/dashboard.types';
 import { buildCategoryBreakdown } from '../../../domain/category/build-category-breakdown';
 import { formatMonthLabel } from '../../../utils/format-month-label';
@@ -18,11 +18,12 @@ export async function loadDashboard({ client, baseCurrency, now }: Input): Promi
 	const { from, to } = getMonthRange(now);
 	const summaryQuery = new URLSearchParams({ from: from.toISOString(), to: to.toISOString() });
 
-	const [accounts, categories, summary, transactions] = await Promise.all([
+	const [accounts, categories, summary, transactions, debtSummary] = await Promise.all([
 		client.get<Account[]>('/accounts'),
 		client.get<Category[]>('/categories'),
 		client.get<PeriodSummary>(`/reports/summary?${summaryQuery}`),
-		client.get<Transaction[]>(`/transactions?limit=${RECENT_TRANSACTION_LIMIT}`)
+		client.get<Transaction[]>(`/transactions?limit=${RECENT_TRANSACTION_LIMIT}`),
+		client.get<DebtSummary>('/debts/summary')
 	]);
 
 	const accountsById = new Map(accounts.map((account) => [account.id, account]));
@@ -33,6 +34,8 @@ export async function loadDashboard({ client, baseCurrency, now }: Input): Promi
 		expense: 0,
 		net: 0
 	};
+
+	const baseDebtTotals = debtSummary.totals.find((totals) => totals.currency === baseCurrency);
 
 	return {
 		monthLabel: formatMonthLabel(now),
@@ -46,6 +49,12 @@ export async function loadDashboard({ client, baseCurrency, now }: Input): Promi
 			...toTransactionRow(transaction, accountsById, categoriesById),
 			dateLabel: formatTransactionDate(new Date(transaction.occurredAt), now)
 		})),
-		mascot: pickMascotState(monthTotals)
+		mascot: pickMascotState(monthTotals),
+		debts: {
+			payable: baseDebtTotals?.payable ?? 0,
+			receivable: baseDebtTotals?.receivable ?? 0,
+			activeCount: debtSummary.activeCount,
+			overdueCount: debtSummary.overdueCount
+		}
 	};
 }

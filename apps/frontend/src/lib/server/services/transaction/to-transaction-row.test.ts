@@ -29,6 +29,8 @@ const transaction = (overrides: Partial<Transaction>): Transaction => ({
 	fee: null,
 	occurredAt: '2026-10-14T01:00:00.000Z',
 	note: null,
+	debtId: null,
+	debtRole: null,
 	...overrides
 });
 
@@ -57,5 +59,9 @@ describe('toTransactionRow', () => {
 		const row = toTransactionRow(transaction({ accountId: 'gone', categoryId: 'gone' }), accounts, categories);
 
 		expect(row).toMatchObject({ accountName: '-', categoryName: null, currency: 'IDR' });
+	});
+
+	test('keeps the debt a transaction belongs to', () => {
+		expect(toTransactionRow(transaction({ debtId: 'debt-1', debtRole: 'principal' }), accounts, categories).debtId).toBe('debt-1');
 	});
 });

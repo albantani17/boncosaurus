@@ -16,4 +16,6 @@ export type TransactionRowData = {
 	categoryName: string | null;
 	note: string | null;
 	occurredAt: string;
+	/** Set when the row moves loan money or is a debt charge; it is then managed from the debt. */
+	debtId: string | null;
 };

@@ -26,6 +26,7 @@ export function toTransactionRow(
 		toAccountName: transaction.toAccountId ? (toAccount?.name ?? UNKNOWN_ACCOUNT) : null,
 		categoryName: category?.name ?? null,
 		note: transaction.note,
-		occurredAt: transaction.occurredAt
+		occurredAt: transaction.occurredAt,
+		debtId: transaction.debtId
 	};
 }

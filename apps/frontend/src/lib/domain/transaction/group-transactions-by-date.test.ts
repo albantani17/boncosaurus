@@ -18,7 +18,8 @@ const row = (id: string, occurredAt: Date): TransactionRowData => ({
 	toAccountName: null,
 	categoryName: null,
 	note: null,
-	occurredAt: occurredAt.toISOString()
+	occurredAt: occurredAt.toISOString(),
+	debtId: null
 });
 
 describe('groupTransactionsByDate', () => {
